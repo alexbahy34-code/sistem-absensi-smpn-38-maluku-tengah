@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Absensi SMPN 38</title>
+    <title>Sistem Absensi SMP NEGERI  38</title>
     <!-- Tailwind CSS untuk Tampilan Cantik -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js untuk Grafik -->
@@ -26,17 +26,16 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
 
-    <!-- NAVBAR dengan Gradasi Khas SMP (Biru Dongker ke Biru Laut) -->
+    <!-- NAVBAR -->
     <nav class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-600 text-white shadow-xl sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex items-center justify-between h-18 py-3">
                 <div class="flex items-center gap-3">
                     <div class="bg-white/10 p-2 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner">
-                        <!-- LOGO UPDATE -->
                         <img src="https://i.ibb.co.com/PZ2gPKRW/pngegg.png" alt="Logo Tut Wuri Handayani" class="h-8 w-auto filter drop-shadow-md">
                     </div>
                     <div>
-                        <span class="font-bold text-xl block leading-tight tracking-wide text-white">SMP NEGERI 38</span>
+                        <span class="font-bold text-xl block leading-tight tracking-wide text-white">SMP NEGERI  38</span>
                         <span class="text-xs text-blue-200 block leading-tight font-medium">Maluku Tengah</span>
                     </div>
                 </div>
@@ -74,18 +73,18 @@
     <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
         
         <!-- Loading Spinner -->
-        <div id="loading" class="text-center py-32">
+        <div id="loading" class="text-center py-32 transition-opacity duration-500">
             <div class="relative inline-block">
                 <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                 <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center">
                     <img src="https://i.ibb.co.com/PZ2gPKRW/pngegg.png" class="h-8 w-8 opacity-50">
                 </div>
             </div>
-            <p class="mt-4 text-slate-500 font-medium animate-pulse">Sedang memuat data sekolah...</p>
+            <p id="loadingText" class="mt-4 text-slate-500 font-medium animate-pulse">Sedang menghubungkan ke server sekolah...</p>
         </div>
 
         <!-- 1. DASHBOARD -->
-        <div id="dashboard" class="tab-content active hidden">
+        <div id="dashboard" class="tab-content hidden">
             <!-- Header Card -->
             <div class="bg-gradient-to-r from-white to-blue-50 p-8 rounded-2xl shadow-sm border border-blue-100 mb-8 relative overflow-hidden">
                 <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -mr-10 -mt-10 opacity-50 blur-2xl"></div>
@@ -126,7 +125,6 @@
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                         <h3 class="font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider">Ringkasan Cepat</h3>
                         <div id="todayStatsText" class="space-y-3">
-                            <!-- Stats injected here -->
                             <div class="animate-pulse flex space-x-4">
                                 <div class="flex-1 space-y-2 py-1">
                                     <div class="h-2 bg-slate-200 rounded"></div>
@@ -294,7 +292,7 @@
 
     <footer class="bg-white border-t border-slate-200 mt-12 py-8">
         <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-slate-600 font-medium text-sm">© 2024 SMP Negeri 38 Maluku Tengah</p>
+            <p class="text-slate-600 font-medium text-sm">© 2025 SMP Negeri 38 Maluku Tengah</p>
             <p class="text-slate-400 text-xs mt-2">Sistem Informasi Manajemen Kehadiran Guru</p>
         </div>
     </footer>
@@ -305,9 +303,15 @@
         import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- KONFIGURASI (Otomatis dari sistem) ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'smpn38-default';
+        // --- KONFIGURASI ---
+        let firebaseConfig, appId;
+        try {
+             firebaseConfig = JSON.parse(__firebase_config);
+             appId = typeof __app_id !== 'undefined' ? __app_id : 'SMP NEGERI 38-default';
+        } catch (e) {
+            console.error("Config Error:", e);
+            document.getElementById('loadingText').innerText = "Gagal memuat konfigurasi sistem.";
+        }
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -326,7 +330,7 @@
                 try {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } catch(e) { 
-                    console.error("Auth Token Error:", e);
+                    console.error("Auth Token Error, fallback to anon:", e);
                     await signInAnonymously(auth); 
                 }
             } else {
@@ -341,8 +345,29 @@
             }
         });
 
-        // --- DATA LOADING ---
+        // --- DATA LOADING & ROBUSTNESS ---
         function loadData() {
+            let teachersLoaded = false;
+            let attendanceLoaded = false;
+
+            function checkLoadingComplete() {
+                if (teachersLoaded && attendanceLoaded) {
+                    const loading = document.getElementById('loading');
+                    if (loading) loading.style.display = 'none';
+                    
+                    // Show dashboard if no tab is active
+                    const activeTab = document.querySelector('.tab-content.active');
+                    if (!activeTab || activeTab.id === 'loading') {
+                        switchTab('dashboard');
+                    } else {
+                        // Ensure dashboard is active visually if it was the target
+                        if (document.getElementById('dashboard').classList.contains('hidden')) {
+                            switchTab('dashboard');
+                        }
+                    }
+                }
+            }
+
             // 1. Teachers
             const qTeachers = query(collection(db, 'artifacts', appId, 'public', 'data', 'teachers'));
             onSnapshot(qTeachers, (snap) => {
@@ -351,35 +376,53 @@
                 renderInputTable(); 
                 renderRekap();
                 updateStats();
+                teachersLoaded = true;
+                checkLoadingComplete();
             }, (error) => {
                 console.error("Error fetching teachers:", error);
-                document.getElementById('teacherList').innerHTML = '<li class="text-red-400 text-center p-4 bg-red-50 rounded-lg">Gagal memuat data guru.</li>';
+                teachersLoaded = true; // Mark done even on error to allow UI to show
+                checkLoadingComplete();
             });
 
             // 2. Attendance
             const qAttendance = query(collection(db, 'artifacts', appId, 'public', 'data', 'attendance'));
             onSnapshot(qAttendance, (snap) => {
                 attendanceData = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('dashboard').classList.remove('hidden'); 
                 updateStats();
                 loadAttendanceForInput(); 
                 renderRekap();
+                attendanceLoaded = true;
+                checkLoadingComplete();
             }, (error) => {
                 console.error("Error fetching attendance:", error);
-                document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Gagal memuat data kehadiran. Periksa koneksi internet.</p>';
+                attendanceLoaded = true; // Mark done even on error
+                checkLoadingComplete();
             });
         }
+
+        // SAFETY TIMEOUT: Jika 10 detik loading tidak selesai, paksa masuk
+        setTimeout(() => {
+            const loading = document.getElementById('loading');
+            if (loading && loading.style.display !== 'none') {
+                console.warn("Loading timeout triggered");
+                loading.style.display = 'none';
+                switchTab('dashboard');
+            }
+        }, 10000);
 
         // --- UI FUNCTIONS ---
         
         window.switchTab = function(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById(tabId).classList.add('active');
-            }, 10);
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('active');
+            });
+            
+            const target = document.getElementById(tabId);
+            if (target) {
+                target.classList.remove('hidden');
+                setTimeout(() => target.classList.add('active'), 10);
+            }
             
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('bg-white/20', 'shadow-inner');
@@ -394,7 +437,7 @@
 
         window.doLogin = function() {
             const p = document.getElementById('passwordInput').value;
-            if(p === 'smpn38mt') {
+            if(p === 'SMP NEGERI 38mt') {
                 isAdmin = true;
                 document.getElementById('btnLogin').classList.add('hidden');
                 document.getElementById('btnLogout').classList.remove('hidden');
@@ -404,7 +447,6 @@
                 document.getElementById('teacher-list-container').classList.remove('mx-auto');
                 document.getElementById('readOnlyBadge').classList.add('hidden');
                 
-                // Add success animation/toast here if needed
                 window.switchTab('input');
             } else {
                 alert("Password Salah! Silakan coba lagi.");
@@ -464,7 +506,6 @@
                     name: name, createdAt: new Date().toISOString()
                 });
                 document.getElementById('newTeacherName').value = '';
-                // alert("Guru ditambahkan"); // Removed alert for smoother UX
             } catch(e) { console.error(e); alert("Gagal: " + e.message); }
         }
 
@@ -480,7 +521,7 @@
             const csvContent = "Nama Lengkap Guru (Wajib)\nContoh: Budi Santoso\nContoh: Siti Aminah\n";
             const link = document.createElement("a");
             link.href = "data:text/csv;charset=utf-8," + encodeURI(csvContent);
-            link.download = "template_data_guru_smpn38.csv";
+            link.download = "template_data_guru_SMP NEGERI 38.csv";
             link.click();
         }
 
