@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi SMPN 38</title>
+    <!-- Tailwind CSS untuk Tampilan Cantik -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js untuk Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- NAVBAR -->
+    <nav class="bg-blue-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <div class="bg-white p-2 rounded-full text-blue-700"><i class="fas fa-chart-bar"></i></div>
+                    <div>
+                        <span class="font-bold text-lg block leading-tight">SMPN 38</span>
+                        <span class="text-xs text-blue-200 block leading-tight">Maluku Tengah</span>
+                    </div>
+                </div>
+                
+                <!-- Menu Desktop -->
+                <div class="hidden md:flex space-x-2">
+                    <button onclick="switchTab('dashboard')" class="nav-btn px-3 py-2 rounded hover:bg-blue-600 transition" id="btn-dashboard"><i class="fas fa-home"></i> Dashboard</button>
+                    <button onclick="switchTab('rekap')" class="nav-btn px-3 py-2 rounded hover:bg-blue-600 transition" id="btn-rekap"><i class="fas fa-file-alt"></i> Rekapitulasi</button>
+                    <button onclick="switchTab('teachers')" class="nav-btn px-3 py-2 rounded hover:bg-blue-600 transition" id="btn-teachers"><i class="fas fa-users"></i> Data Guru</button>
+                    <button onclick="switchTab('input')" class="nav-btn px-3 py-2 rounded hover:bg-blue-600 transition hidden" id="btn-input"><i class="fas fa-calendar-check"></i> Input Absen</button>
+                </div>
+
+                <!-- Login/Logout -->
+                <div>
+                    <button id="btnLogin" onclick="switchTab('login')" class="bg-blue-500 hover:bg-blue-400 px-3 py-1.5 rounded text-sm"><i class="fas fa-sign-in-alt"></i> Login Admin</button>
+                    <button id="btnLogout" onclick="doLogout()" class="bg-red-500 hover:bg-red-400 px-3 py-1.5 rounded text-sm hidden"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+        
+        <!-- Loading Spinner -->
+        <div id="loading" class="text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-700"></div>
+            <p class="mt-2 text-gray-500">Memuat data...</p>
+        </div>
+
+        <!-- 1. DASHBOARD -->
+        <div id="dashboard" class="tab-content active hidden">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Dashboard Kehadiran</h2>
+                <p class="text-gray-500">Pantauan real-time hari ini: <span id="todayDate"></span></p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 col-span-1 md:col-span-2">
+                    <h3 class="font-semibold mb-4">Statistik Hari Ini</h3>
+                    <div class="h-64 relative">
+                        <canvas id="chartKehadiran"></canvas>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl shadow-md text-white">
+                    <h3 class="font-bold text-xl mb-2">Total Guru</h3>
+                    <p class="text-5xl font-extrabold mb-4" id="totalTeachersDisplay">0</p>
+                    <div id="todayStatsText" class="text-sm space-y-1">
+                        <!-- Stats text will go here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. REKAPITULASI -->
+        <div id="rekap" class="tab-content">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row justify-between items-end gap-4">
+                <div>
+                    <h2 class="text-xl font-bold">Rekapitulasi Bulanan</h2>
+                    <p class="text-sm text-gray-500">Laporan kehadiran per periode.</p>
+                </div>
+                <div class="flex gap-2">
+                    <input type="month" id="filterMonth" class="border p-2 rounded outline-none" onchange="renderRekap()">
+                    <button onclick="downloadCSV()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"><i class="fas fa-download"></i> Export Excel</button>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-blue-50 text-blue-800 border-b">
+                            <tr>
+                                <th class="p-4">Nama Guru</th>
+                                <th class="p-4 text-center">Hadir</th>
+                                <th class="p-4 text-center">Sakit</th>
+                                <th class="p-4 text-center">Ijin</th>
+                                <th class="p-4 text-center">Alpa</th>
+                                <th class="p-4 text-center">% Hadir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-rekap" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. DATA GURU -->
+        <div id="teachers" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Form (Admin Only) -->
+                <div id="admin-teacher-panel" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <h3 class="font-bold mb-4">Tambah Guru Manual</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="newTeacherName" placeholder="Nama Guru" class="flex-1 border p-2 rounded">
+                            <button onclick="addTeacher()" class="bg-blue-600 text-white px-4 py-2 rounded">Tambah</button>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border">
+                        <h3 class="font-bold mb-4">Upload Excel (CSV)</h3>
+                        <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(this)" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                </div>
+                <!-- List -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border h-[500px] overflow-y-auto w-full mx-auto" id="teacher-list-container">
+                    <h3 class="font-bold mb-4 border-b pb-2">Daftar Guru</h3>
+                    <ul id="teacherList" class="space-y-2"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. INPUT ABSEN (Admin Only) -->
+        <div id="input" class="tab-content">
+            <div class="bg-white p-6 rounded-xl shadow-sm border mb-6 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold">Input Kehadiran</h2>
+                    <p class="text-sm text-gray-500">Khusus Admin.</p>
+                </div>
+                <input type="date" id="inputDate" class="border p-2 rounded shadow-sm" onchange="loadAttendanceForInput()">
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden mb-4">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 border-b">
+                        <tr>
+                            <th class="p-4">Nama Guru</th>
+                            <th class="p-4 text-center">Hadir</th>
+                            <th class="p-4 text-center">Sakit</th>
+                            <th class="p-4 text-center">Ijin</th>
+                            <th class="p-4 text-center">Alpa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-input" class="divide-y"></tbody>
+                </table>
+            </div>
+            <div class="text-right">
+                <button onclick="saveAttendance()" class="bg-blue-600 text-white px-8 py-3 rounded-lg shadow font-bold hover:bg-blue-700">
+                    <i class="fas fa-save"></i> Simpan
+                </button>
+            </div>
+        </div>
+
+        <!-- 5. LOGIN -->
+        <div id="login" class="tab-content">
+            <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border mt-10 text-center">
+                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-2xl">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-6">Login Pimpinan</h2>
+                <input type="password" id="passwordInput" placeholder="Masukkan Password" class="w-full border p-3 rounded mb-4">
+                <button onclick="doLogin()" class="w-full bg-blue-600 text-white py-3 rounded font-bold">Masuk</button>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t mt-12 py-6 text-center text-gray-500 text-sm">
+        <p>© 2025 SMP Negeri 38 Maluku Tengah</p>
+    </footer>
+
+    <!-- FIREBASE & LOGIC SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // --- KONFIGURASI (Otomatis dari sistem) ---
+        // Jika dipakai di hosting sendiri, ganti bagian ini dengan config dari Firebase Console Anda
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'smpn38-default';
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // --- STATE VARIABLES ---
+        let teachers = [];
+        let attendanceData = [];
+        let isAdmin = false;
+        let currentChart = null;
+        let inputState = {}; // Menyimpan status input sementara
+
+        // --- AUTH ---
+        async function initAuth() {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch(e) { await signInAnonymously(auth); }
+            } else {
+                await signInAnonymously(auth);
+            }
+        }
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadData();
+            }
+        });
+
+        // --- DATA LOADING ---
+        function loadData() {
+            // 1. Teachers
+            const qTeachers = query(collection(db, 'artifacts', appId, 'public', 'data', 'teachers'));
+            onSnapshot(qTeachers, (snap) => {
+                teachers = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.name.localeCompare(b.name));
+                renderTeachers();
+                renderInputTable(); // Refresh input table if teachers change
+                renderRekap();
+                updateStats();
+            });
+
+            // 2. Attendance
+            const qAttendance = query(collection(db, 'artifacts', appId, 'public', 'data', 'attendance'));
+            onSnapshot(qAttendance, (snap) => {
+                attendanceData = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').classList.remove('hidden'); // Show dashboard initially
+                updateStats();
+                loadAttendanceForInput(); // Update input form if date matches
+                renderRekap();
+            });
+        }
+
+        // --- UI FUNCTIONS ---
+        
+        // Expose functions to window so HTML buttons can call them
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update button styles
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('bg-blue-800'));
+            const btn = document.getElementById('btn-' + tabId);
+            if(btn) btn.classList.add('bg-blue-800');
+        }
+
+        window.doLogin = function() {
+            const p = document.getElementById('passwordInput').value;
+            if(p === 'smpn38mt') {
+                isAdmin = true;
+                document.getElementById('btnLogin').classList.add('hidden');
+                document.getElementById('btnLogout').classList.remove('hidden');
+                document.getElementById('btn-input').classList.remove('hidden');
+                
+                document.getElementById('admin-teacher-panel').classList.remove('hidden');
+                document.getElementById('teacher-list-container').classList.remove('mx-auto');
+                
+                alert("Login Berhasil!");
+                window.switchTab('input');
+            } else {
+                alert("Password Salah!");
+            }
+        }
+
+        window.doLogout = function() {
+            isAdmin = false;
+            document.getElementById('btnLogin').classList.remove('hidden');
+            document.getElementById('btnLogout').classList.add('hidden');
+            document.getElementById('btn-input').classList.add('hidden');
+            
+            document.getElementById('admin-teacher-panel').classList.add('hidden');
+            document.getElementById('teacher-list-container').classList.add('mx-auto');
+            
+            window.switchTab('dashboard');
+        }
+
+        // --- RENDERERS ---
+
+        function renderTeachers() {
+            const list = document.getElementById('teacherList');
+            list.innerHTML = '';
+            
+            if(teachers.length === 0) {
+                list.innerHTML = '<li class="text-gray-400 text-center">Belum ada data guru.</li>';
+                return;
+            }
+
+            teachers.forEach(t => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center p-3 bg-gray-50 rounded hover:bg-blue-50 group";
+                li.innerHTML = `
+                    <span class="font-medium">${t.name}</span>
+                    ${isAdmin ? `<button onclick="deleteTeacher('${t.id}')" class="text-gray-300 hover:text-red-500"><i class="fas fa-trash"></i></button>` : ''}
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // Input Logic
+        window.addTeacher = async function() {
+            const name = document.getElementById('newTeacherName').value;
+            if(!name) return;
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'teachers'), {
+                    name: name, createdAt: new Date().toISOString()
+                });
+                document.getElementById('newTeacherName').value = '';
+                alert("Guru ditambahkan");
+            } catch(e) { console.error(e); alert("Gagal"); }
+        }
+
+        window.deleteTeacher = async function(id) {
+            if(confirm("Hapus guru ini?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', id));
+            }
+        }
+
+        window.handleCSV = function(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const lines = e.target.result.split('\n');
+                let count = 0;
+                for(let line of lines) {
+                    const name = line.trim().replace(/['"]+/g, '');
+                    if(name.length > 2 && !teachers.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'teachers'), {
+                            name: name, createdAt: new Date().toISOString()
+                        });
+                        count++;
+                    }
+                }
+                alert(`Berhasil import ${count} guru.`);
+            };
+            reader.readAsText(file);
+        }
+
+        // Attendance Logic
+        window.loadAttendanceForInput = function() {
+            const date = document.getElementById('inputDate').value || new Date().toISOString().split('T')[0];
+            document.getElementById('inputDate').value = date;
+            
+            const record = attendanceData.find(a => a.id === date);
+            inputState = record ? (record.records || {}) : {};
+            renderInputTable();
+        }
+
+        function renderInputTable() {
+            const tbody = document.getElementById('tbody-input');
+            tbody.innerHTML = '';
+            teachers.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+                const status = inputState[t.id];
+                
+                tr.innerHTML = `
+                    <td class="p-4 font-medium">${t.name}</td>
+                    ${['H','S','I','A'].map(code => `
+                        <td class="p-4 text-center">
+                            <input type="radio" name="status-${t.id}" value="${code}" 
+                                ${status === code ? 'checked' : ''} 
+                                onchange="updateInputState('${t.id}', '${code}')"
+                                class="w-5 h-5 cursor-pointer accent-blue-600">
+                        </td>
+                    `).join('')}
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.updateInputState = function(tid, val) {
+            inputState[tid] = val;
+        }
+
+        window.saveAttendance = async function() {
+            const date = document.getElementById('inputDate').value;
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance', date), {
+                    date: date, records: inputState, lastUpdated: new Date().toISOString()
+                });
+                alert("Data tersimpan!");
+            } catch(e) { console.error(e); alert("Gagal menyimpan"); }
+        }
+
+        // Dashboard Logic
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('todayDate').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('totalTeachersDisplay').innerText = teachers.length;
+
+            const record = attendanceData.find(a => a.id === today);
+            let counts = {H:0, S:0, I:0, A:0};
+            if(record) {
+                Object.values(record.records).forEach(v => { if(counts[v] !== undefined) counts[v]++ });
+            }
+
+            // Update Chart
+            const ctx = document.getElementById('chartKehadiran').getContext('2d');
+            if(currentChart) currentChart.destroy();
+            
+            currentChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Hadir', 'Sakit', 'Ijin', 'Alpa'],
+                    datasets: [{
+                        data: [counts.H, counts.S, counts.I, counts.A],
+                        backgroundColor: ['#22c55e', '#eab308', '#3b82f6', '#ef4444']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Text stats
+            document.getElementById('todayStatsText').innerHTML = `
+                Hadir: <b>${counts.H}</b> | Sakit: <b>${counts.S}</b> | Ijin: <b>${counts.I}</b> | Alpa: <b>${counts.A}</b>
+            `;
+        }
+
+        // Rekap Logic
+        window.renderRekap = function() {
+            const month = document.getElementById('filterMonth').value || new Date().toISOString().slice(0, 7);
+            document.getElementById('filterMonth').value = month;
+            
+            const tbody = document.getElementById('tbody-rekap');
+            tbody.innerHTML = '';
+
+            const filtered = attendanceData.filter(a => a.date.startsWith(month));
+            
+            teachers.forEach(t => {
+                let h=0, s=0, i=0, a=0;
+                filtered.forEach(rec => {
+                    const stat = rec.records[t.id];
+                    if(stat==='H') h++; else if(stat==='S') s++; else if(stat==='I') i++; else if(stat==='A') a++;
+                });
+                const total = h+s+i+a;
+                const pct = total > 0 ? Math.round((h/total)*100) : 0;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 border-b";
+                tr.innerHTML = `
+                    <td class="p-4 font-medium">${t.name}</td>
+                    <td class="p-4 text-center font-bold text-green-600">${h}</td>
+                    <td class="p-4 text-center text-yellow-600">${s}</td>
+                    <td class="p-4 text-center text-blue-600">${i}</td>
+                    <td class="p-4 text-center font-bold text-red-600">${a}</td>
+                    <td class="p-4 text-center">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                        <span class="text-xs">${pct}%</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.downloadCSV = function() {
+            const month = document.getElementById('filterMonth').value;
+            let csv = `Rekap Absensi ${month}\nNama,Hadir,Sakit,Ijin,Alpa,Persentase\n`;
+            
+            // Re-calculate simply for CSV
+            const filtered = attendanceData.filter(a => a.date.startsWith(month));
+            teachers.forEach(t => {
+                let h=0, s=0, i=0, a=0;
+                filtered.forEach(rec => {
+                    const stat = rec.records[t.id];
+                    if(stat==='H') h++; else if(stat==='S') s++; else if(stat==='I') i++; else if(stat==='A') a++;
+                });
+                const total = h+s+i+a;
+                const pct = total > 0 ? Math.round((h/total)*100) : 0;
+                csv += `"${t.name}",${h},${s},${i},${a},${pct}%\n`;
+            });
+
+            const link = document.createElement("a");
+            link.href = "data:text/csv;charset=utf-8," + encodeURI(csv);
+            link.download = `rekap_${month}.csv`;
+            link.click();
+        }
+
+    </script>
+</body>
+</html>
