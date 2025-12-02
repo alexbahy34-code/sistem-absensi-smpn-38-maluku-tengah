@@ -14,69 +14,126 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Scrollbar agar lebih rapi */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-gray-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
 
-    <!-- NAVBAR -->
-    <nav class="bg-blue-700 text-white shadow-lg sticky top-0 z-50">
+    <!-- NAVBAR dengan Gradasi Khas SMP (Biru Dongker ke Biru Laut) -->
+    <nav class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-600 text-white shadow-xl sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-2">
-                    <div class="bg-white p-2 rounded-full text-blue-700"><i class="fas fa-chart-bar"></i></div>
+            <div class="flex items-center justify-between h-18 py-3">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white/10 p-2 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner">
+                        <!-- LOGO UPDATE -->
+                        <img src="https://i.ibb.co.com/PZ2gPKRW/pngegg.png" alt="Logo Tut Wuri Handayani" class="h-8 w-auto filter drop-shadow-md">
+                    </div>
                     <div>
-                        <span class="font-bold text-lg block leading-tight">SMPN 38</span>
-                        <span class="text-xs text-blue-200 block leading-tight">Maluku Tengah</span>
+                        <span class="font-bold text-xl block leading-tight tracking-wide text-white">SMP NEGERI 38</span>
+                        <span class="text-xs text-blue-200 block leading-tight font-medium">Maluku Tengah</span>
                     </div>
                 </div>
                 
                 <!-- Menu Desktop -->
-                <div class="hidden md:flex space-x-2">
-                    <button onclick="switchTab('dashboard')" class="nav-btn px-3 py-2 rounded hover:bg-blue-600 transition" id="btn-dashboard"><i class="fas fa-home"></i> Dashboard</button>
-                    <button onclick="switchTab('rekap')" class="nav-btn px-3 py-2 rounded hover:bg-blue-600 transition" id="btn-rekap"><i class="fas fa-file-alt"></i> Rekapitulasi</button>
-                    <button onclick="switchTab('teachers')" class="nav-btn px-3 py-2 rounded hover:bg-blue-600 transition" id="btn-teachers"><i class="fas fa-users"></i> Data Guru</button>
-                    <button onclick="switchTab('input')" class="nav-btn px-3 py-2 rounded hover:bg-blue-600 transition hidden" id="btn-input"><i class="fas fa-calendar-check"></i> Input Absen</button>
+                <div class="hidden md:flex space-x-1 bg-blue-900/30 p-1 rounded-lg backdrop-blur-sm">
+                    <button onclick="switchTab('dashboard')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 focus:ring-2 ring-white/20" id="btn-dashboard">
+                        <i class="fas fa-home mr-1"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('rekap')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 focus:ring-2 ring-white/20" id="btn-rekap">
+                        <i class="fas fa-file-alt mr-1"></i> Rekapitulasi
+                    </button>
+                    <button onclick="switchTab('teachers')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 focus:ring-2 ring-white/20" id="btn-teachers">
+                        <i class="fas fa-users mr-1"></i> Data Guru
+                    </button>
+                    <button onclick="switchTab('input')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/10 focus:ring-2 ring-white/20 hidden bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30" id="btn-input">
+                        <i class="fas fa-calendar-check mr-1"></i> Input Absen
+                    </button>
                 </div>
 
                 <!-- Login/Logout -->
                 <div>
-                    <button id="btnLogin" onclick="switchTab('login')" class="bg-blue-500 hover:bg-blue-400 px-3 py-1.5 rounded text-sm"><i class="fas fa-sign-in-alt"></i> Login Admin</button>
-                    <button id="btnLogout" onclick="doLogout()" class="bg-red-500 hover:bg-red-400 px-3 py-1.5 rounded text-sm hidden"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+                    <button id="btnLogin" onclick="switchTab('login')" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg shadow-emerald-500/30 text-white px-5 py-2 rounded-full text-sm font-semibold transition-all transform hover:scale-105">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Login Admin
+                    </button>
+                    <button id="btnLogout" onclick="doLogout()" class="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 shadow-lg shadow-red-500/30 text-white px-5 py-2 rounded-full text-sm font-semibold hidden transition-all transform hover:scale-105">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Keluar
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- MAIN CONTENT -->
-    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
         
         <!-- Loading Spinner -->
-        <div id="loading" class="text-center py-20">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-700"></div>
-            <p class="mt-2 text-gray-500">Memuat data...</p>
+        <div id="loading" class="text-center py-32">
+            <div class="relative inline-block">
+                <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                    <img src="https://i.ibb.co.com/PZ2gPKRW/pngegg.png" class="h-8 w-8 opacity-50">
+                </div>
+            </div>
+            <p class="mt-4 text-slate-500 font-medium animate-pulse">Sedang memuat data sekolah...</p>
         </div>
 
         <!-- 1. DASHBOARD -->
         <div id="dashboard" class="tab-content active hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Dashboard Kehadiran</h2>
-                <p class="text-gray-500">Pantauan real-time hari ini: <span id="todayDate"></span></p>
+            <!-- Header Card -->
+            <div class="bg-gradient-to-r from-white to-blue-50 p-8 rounded-2xl shadow-sm border border-blue-100 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -mr-10 -mt-10 opacity-50 blur-2xl"></div>
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Dashboard Kehadiran</h2>
+                    <p class="text-slate-500 flex items-center gap-2">
+                        <i class="far fa-calendar-alt text-blue-500"></i>
+                        Pantauan real-time hari ini: <span id="todayDate" class="font-semibold text-blue-700"></span>
+                    </p>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 col-span-1 md:col-span-2">
-                    <h3 class="font-semibold mb-4">Statistik Hari Ini</h3>
-                    <div class="h-64 relative">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Statistik Chart -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 col-span-1 md:col-span-2">
+                    <h3 class="font-bold text-lg text-slate-700 mb-6 border-l-4 border-blue-500 pl-3">Statistik Hari Ini</h3>
+                    <div class="h-72 relative">
                         <canvas id="chartKehadiran"></canvas>
                     </div>
                 </div>
-                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl shadow-md text-white">
-                    <h3 class="font-bold text-xl mb-2">Total Guru</h3>
-                    <p class="text-5xl font-extrabold mb-4" id="totalTeachersDisplay">0</p>
-                    <div id="todayStatsText" class="text-sm space-y-1">
-                        <!-- Stats text will go here -->
+
+                <!-- Info Card -->
+                <div class="space-y-6">
+                    <!-- Total Guru Card -->
+                    <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg shadow-blue-500/20 text-white relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                            <i class="fas fa-users text-9xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-1 text-blue-100">Total Guru</h3>
+                        <p class="text-5xl font-extrabold mb-4 tracking-tight" id="totalTeachersDisplay">0</p>
+                        <div class="h-1 w-full bg-blue-500/30 rounded-full mb-4">
+                            <div class="h-1 bg-blue-300 rounded-full w-2/3"></div>
+                        </div>
+                        <p class="text-sm text-blue-100 font-light">Guru terdaftar aktif dalam sistem.</p>
+                    </div>
+
+                    <!-- Summary Text Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-slate-700 mb-4 text-sm uppercase tracking-wider">Ringkasan Cepat</h3>
+                        <div id="todayStatsText" class="space-y-3">
+                            <!-- Stats injected here -->
+                            <div class="animate-pulse flex space-x-4">
+                                <div class="flex-1 space-y-2 py-1">
+                                    <div class="h-2 bg-slate-200 rounded"></div>
+                                    <div class="h-2 bg-slate-200 rounded w-5/6"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -84,30 +141,33 @@
 
         <!-- 2. REKAPITULASI -->
         <div id="rekap" class="tab-content">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row justify-between items-end gap-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row justify-between items-end gap-4">
                 <div>
-                    <h2 class="text-xl font-bold">Rekapitulasi Bulanan</h2>
-                    <p class="text-sm text-gray-500">Laporan kehadiran per periode.</p>
+                    <h2 class="text-2xl font-bold text-slate-800">Rekapitulasi Bulanan</h2>
+                    <p class="text-sm text-slate-500 mt-1">Laporan kehadiran guru per periode bulan.</p>
                 </div>
-                <div class="flex gap-2">
-                    <input type="month" id="filterMonth" class="border p-2 rounded outline-none" onchange="renderRekap()">
-                    <button onclick="downloadCSV()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"><i class="fas fa-download"></i> Export Excel</button>
+                <div class="flex gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <input type="month" id="filterMonth" class="bg-white border border-slate-300 px-3 py-2 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-600 font-medium" onchange="renderRekap()">
+                    <button onclick="downloadCSV()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md transition-all flex items-center gap-2">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-blue-50 text-blue-800 border-b">
+                        <thead class="bg-slate-100 text-slate-600 border-b border-slate-200">
                             <tr>
-                                <th class="p-4">Nama Guru</th>
-                                <th class="p-4 text-center">Hadir</th>
-                                <th class="p-4 text-center">Sakit</th>
-                                <th class="p-4 text-center">Ijin</th>
-                                <th class="p-4 text-center">Alpa</th>
-                                <th class="p-4 text-center">% Hadir</th>
+                                <th class="p-5 font-bold text-sm uppercase tracking-wide">Nama Guru</th>
+                                <th class="p-5 text-center font-bold text-sm uppercase tracking-wide text-emerald-600">Hadir</th>
+                                <th class="p-5 text-center font-bold text-sm uppercase tracking-wide text-amber-500">Sakit</th>
+                                <th class="p-5 text-center font-bold text-sm uppercase tracking-wide text-blue-500">Ijin</th>
+                                <th class="p-5 text-center font-bold text-sm uppercase tracking-wide text-rose-500">Alpa</th>
+                                <th class="p-5 text-center font-bold text-sm uppercase tracking-wide">Kehadiran</th>
                             </tr>
                         </thead>
-                        <tbody id="tbody-rekap" class="divide-y"></tbody>
+                        <tbody id="tbody-rekap" class="divide-y divide-slate-100 text-sm"></tbody>
                     </table>
                 </div>
             </div>
@@ -118,82 +178,134 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Form (Admin Only) -->
                 <div id="admin-teacher-panel" class="hidden space-y-6">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border">
-                        <h3 class="font-bold mb-4">Tambah Guru Manual</h3>
+                    <!-- Manual Input -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="font-bold text-lg mb-4 text-slate-800 flex items-center gap-2">
+                            <div class="bg-blue-100 p-2 rounded-lg text-blue-600"><i class="fas fa-user-plus"></i></div>
+                            Tambah Guru Manual
+                        </h3>
                         <div class="flex gap-2">
-                            <input type="text" id="newTeacherName" placeholder="Nama Guru" class="flex-1 border p-2 rounded">
-                            <button onclick="addTeacher()" class="bg-blue-600 text-white px-4 py-2 rounded">Tambah</button>
+                            <input type="text" id="newTeacherName" placeholder="Ketik Nama Lengkap..." class="flex-1 bg-slate-50 border border-slate-200 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all">
+                            <button onclick="addTeacher()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium shadow-md transition-all">
+                                <i class="fas fa-plus"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border">
-                        <h3 class="font-bold mb-4">Upload Excel (CSV)</h3>
-                        <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(this)" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    
+                    <!-- Excel Input -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl shadow-sm border border-emerald-100">
+                        <h3 class="font-bold text-lg mb-2 flex items-center gap-2 text-emerald-800">
+                            <i class="fas fa-file-excel text-emerald-600"></i> Import Masal (Excel/CSV)
+                        </h3>
+                        <p class="text-sm text-emerald-600/80 mb-6 leading-relaxed">Gunakan fitur ini untuk memasukkan data banyak guru sekaligus. Pastikan format sesuai template.</p>
+                        
+                        <div class="flex flex-col gap-4">
+                            <button onclick="downloadTemplate()" class="bg-white text-emerald-700 border border-emerald-200 px-4 py-3 rounded-xl hover:bg-emerald-50 text-sm font-semibold w-full flex items-center justify-center gap-2 shadow-sm transition-all">
+                                <i class="fas fa-download"></i> Download Template CSV
+                            </button>
+                            
+                            <div class="relative border-2 border-dashed border-emerald-300 bg-white/50 rounded-xl p-6 text-center hover:bg-white hover:border-emerald-500 transition-all cursor-pointer group">
+                                <input type="file" id="csvFile" accept=".csv" onchange="handleCSV(this)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                                <div class="text-sm text-emerald-600 group-hover:text-emerald-700 transition-colors">
+                                    <i class="fas fa-cloud-upload-alt text-3xl mb-2 block opacity-50 group-hover:opacity-100 transform group-hover:-translate-y-1 transition-all"></i>
+                                    <span class="font-bold">Klik Upload</span> atau tarik file ke sini
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
                 <!-- List -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border h-[500px] overflow-y-auto w-full mx-auto" id="teacher-list-container">
-                    <h3 class="font-bold mb-4 border-b pb-2">Daftar Guru</h3>
-                    <ul id="teacherList" class="space-y-2"></ul>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-[600px] flex flex-col w-full mx-auto relative" id="teacher-list-container">
+                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100 sticky top-0 bg-white z-10">
+                        <h3 class="font-bold text-lg text-slate-800">Daftar Guru Terdaftar</h3>
+                        <span id="readOnlyBadge" class="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+                            <i class="fas fa-lock text-xs mr-1"></i> Mode Lihat
+                        </span>
+                    </div>
+                    <div class="overflow-y-auto pr-2 flex-grow custom-scrollbar">
+                        <ul id="teacherList" class="space-y-3"></ul>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- 4. INPUT ABSEN (Admin Only) -->
         <div id="input" class="tab-content">
-            <div class="bg-white p-6 rounded-xl shadow-sm border mb-6 flex justify-between items-center">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg text-white mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
-                    <h2 class="text-xl font-bold">Input Kehadiran</h2>
-                    <p class="text-sm text-gray-500">Khusus Admin.</p>
+                    <h2 class="text-2xl font-bold">Input Kehadiran</h2>
+                    <p class="text-blue-100 text-sm opacity-90">Silakan pilih tanggal dan isi status kehadiran guru.</p>
                 </div>
-                <input type="date" id="inputDate" class="border p-2 rounded shadow-sm" onchange="loadAttendanceForInput()">
+                <div class="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
+                    <input type="date" id="inputDate" class="bg-white text-slate-800 border-none px-4 py-2 rounded-md font-medium outline-none focus:ring-2 focus:ring-white/50 cursor-pointer" onchange="loadAttendanceForInput()">
+                </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border overflow-hidden mb-4">
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
                 <table class="w-full text-left">
-                    <thead class="bg-gray-50 border-b">
+                    <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th class="p-4">Nama Guru</th>
-                            <th class="p-4 text-center">Hadir</th>
-                            <th class="p-4 text-center">Sakit</th>
-                            <th class="p-4 text-center">Ijin</th>
-                            <th class="p-4 text-center">Alpa</th>
+                            <th class="p-5 font-bold text-slate-600 text-sm uppercase">Nama Guru</th>
+                            <th class="p-5 text-center font-bold text-emerald-600 text-sm uppercase">Hadir</th>
+                            <th class="p-5 text-center font-bold text-amber-500 text-sm uppercase">Sakit</th>
+                            <th class="p-5 text-center font-bold text-blue-500 text-sm uppercase">Ijin</th>
+                            <th class="p-5 text-center font-bold text-rose-500 text-sm uppercase">Alpa</th>
                         </tr>
                     </thead>
-                    <tbody id="tbody-input" class="divide-y"></tbody>
+                    <tbody id="tbody-input" class="divide-y divide-slate-100"></tbody>
                 </table>
             </div>
-            <div class="text-right">
-                <button onclick="saveAttendance()" class="bg-blue-600 text-white px-8 py-3 rounded-lg shadow font-bold hover:bg-blue-700">
-                    <i class="fas fa-save"></i> Simpan
+            
+            <div class="flex justify-end">
+                <button onclick="saveAttendance()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl shadow-lg shadow-blue-500/30 font-bold transition-all transform hover:-translate-y-1 flex items-center gap-3">
+                    <i class="fas fa-save"></i> Simpan Data Absensi
                 </button>
             </div>
         </div>
 
         <!-- 5. LOGIN -->
         <div id="login" class="tab-content">
-            <div class="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg border mt-10 text-center">
-                <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-2xl">
-                    <i class="fas fa-lock"></i>
+            <div class="max-w-md mx-auto bg-white p-10 rounded-3xl shadow-xl border border-slate-100 mt-16 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                
+                <div class="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600 text-3xl shadow-inner">
+                    <i class="fas fa-user-shield"></i>
                 </div>
-                <h2 class="text-2xl font-bold mb-6">Login Pimpinan</h2>
-                <input type="password" id="passwordInput" placeholder="Masukkan Password" class="w-full border p-3 rounded mb-4">
-                <button onclick="doLogin()" class="w-full bg-blue-600 text-white py-3 rounded font-bold">Masuk</button>
+                
+                <h2 class="text-3xl font-bold mb-2 text-slate-800">Login Pimpinan</h2>
+                <p class="text-slate-500 mb-8 text-sm">Masukkan kode akses untuk mengelola data.</p>
+                
+                <div class="relative mb-6 text-left">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block ml-1">Password</label>
+                    <div class="flex items-center border-2 border-slate-200 rounded-xl px-3 py-1 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all bg-slate-50">
+                        <i class="fas fa-key text-slate-400 mr-3"></i>
+                        <input type="password" id="passwordInput" placeholder="••••••••" class="w-full bg-transparent border-none p-2 focus:ring-0 outline-none text-slate-700 font-medium">
+                    </div>
+                </div>
+
+                <button onclick="doLogin()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all transform hover:scale-[1.02]">
+                    Masuk Dashboard
+                </button>
             </div>
         </div>
 
     </main>
 
-    <footer class="bg-white border-t mt-12 py-6 text-center text-gray-500 text-sm">
-        <p>© 2025 SMP Negeri 38 Maluku Tengah</p>
+    <footer class="bg-white border-t border-slate-200 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-slate-600 font-medium text-sm">© 2024 SMP Negeri 38 Maluku Tengah</p>
+            <p class="text-slate-400 text-xs mt-2">Sistem Informasi Manajemen Kehadiran Guru</p>
+        </div>
     </footer>
 
     <!-- FIREBASE & LOGIC SCRIPT -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, setDoc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // --- KONFIGURASI (Otomatis dari sistem) ---
-        // Jika dipakai di hosting sendiri, ganti bagian ini dengan config dari Firebase Console Anda
         const firebaseConfig = JSON.parse(__firebase_config);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'smpn38-default';
         
@@ -206,14 +318,17 @@
         let attendanceData = [];
         let isAdmin = false;
         let currentChart = null;
-        let inputState = {}; // Menyimpan status input sementara
+        let inputState = {}; 
 
         // --- AUTH ---
         async function initAuth() {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 try {
                     await signInWithCustomToken(auth, __initial_auth_token);
-                } catch(e) { await signInAnonymously(auth); }
+                } catch(e) { 
+                    console.error("Auth Token Error:", e);
+                    await signInAnonymously(auth); 
+                }
             } else {
                 await signInAnonymously(auth);
             }
@@ -233,9 +348,12 @@
             onSnapshot(qTeachers, (snap) => {
                 teachers = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.name.localeCompare(b.name));
                 renderTeachers();
-                renderInputTable(); // Refresh input table if teachers change
+                renderInputTable(); 
                 renderRekap();
                 updateStats();
+            }, (error) => {
+                console.error("Error fetching teachers:", error);
+                document.getElementById('teacherList').innerHTML = '<li class="text-red-400 text-center p-4 bg-red-50 rounded-lg">Gagal memuat data guru.</li>';
             });
 
             // 2. Attendance
@@ -243,26 +361,35 @@
             onSnapshot(qAttendance, (snap) => {
                 attendanceData = snap.docs.map(d => ({id: d.id, ...d.data()}));
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('dashboard').classList.remove('hidden'); // Show dashboard initially
+                document.getElementById('dashboard').classList.remove('hidden'); 
                 updateStats();
-                loadAttendanceForInput(); // Update input form if date matches
+                loadAttendanceForInput(); 
                 renderRekap();
+            }, (error) => {
+                console.error("Error fetching attendance:", error);
+                document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Gagal memuat data kehadiran. Periksa koneksi internet.</p>';
             });
         }
 
         // --- UI FUNCTIONS ---
         
-        // Expose functions to window so HTML buttons can call them
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById(tabId).classList.add('active');
+            setTimeout(() => {
+                document.getElementById(tabId).classList.add('active');
+            }, 10);
             
-            // Update button styles
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('bg-blue-800'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-white/20', 'shadow-inner');
+                btn.classList.add('hover:bg-white/10');
+            });
             const btn = document.getElementById('btn-' + tabId);
-            if(btn) btn.classList.add('bg-blue-800');
+            if(btn) {
+                btn.classList.add('bg-white/20', 'shadow-inner');
+                btn.classList.remove('hover:bg-white/10');
+            }
         }
 
         window.doLogin = function() {
@@ -275,11 +402,12 @@
                 
                 document.getElementById('admin-teacher-panel').classList.remove('hidden');
                 document.getElementById('teacher-list-container').classList.remove('mx-auto');
+                document.getElementById('readOnlyBadge').classList.add('hidden');
                 
-                alert("Login Berhasil!");
+                // Add success animation/toast here if needed
                 window.switchTab('input');
             } else {
-                alert("Password Salah!");
+                alert("Password Salah! Silakan coba lagi.");
             }
         }
 
@@ -291,6 +419,7 @@
             
             document.getElementById('admin-teacher-panel').classList.add('hidden');
             document.getElementById('teacher-list-container').classList.add('mx-auto');
+            document.getElementById('readOnlyBadge').classList.remove('hidden');
             
             window.switchTab('dashboard');
         }
@@ -302,22 +431,31 @@
             list.innerHTML = '';
             
             if(teachers.length === 0) {
-                list.innerHTML = '<li class="text-gray-400 text-center">Belum ada data guru.</li>';
+                list.innerHTML = `
+                    <li class="flex flex-col items-center justify-center py-10 text-slate-400">
+                        <i class="far fa-folder-open text-4xl mb-3 opacity-50"></i>
+                        <span class="text-sm">Belum ada data guru.</span>
+                    </li>`;
                 return;
             }
 
             teachers.forEach(t => {
                 const li = document.createElement('li');
-                li.className = "flex justify-between items-center p-3 bg-gray-50 rounded hover:bg-blue-50 group";
+                li.className = "flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-all group";
                 li.innerHTML = `
-                    <span class="font-medium">${t.name}</span>
-                    ${isAdmin ? `<button onclick="deleteTeacher('${t.id}')" class="text-gray-300 hover:text-red-500"><i class="fas fa-trash"></i></button>` : ''}
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 text-xs font-bold shadow-sm">
+                            ${t.name.charAt(0)}
+                        </div>
+                        <span class="font-medium text-slate-700 group-hover:text-blue-700 transition-colors">${t.name}</span>
+                    </div>
+                    ${isAdmin ? `<button onclick="deleteTeacher('${t.id}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-slate-300 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all shadow-sm"><i class="fas fa-trash-alt text-sm"></i></button>` : ''}
                 `;
                 list.appendChild(li);
             });
         }
 
-        // Input Logic
+        // Input Logic & Template
         window.addTeacher = async function() {
             const name = document.getElementById('newTeacherName').value;
             if(!name) return;
@@ -326,33 +464,56 @@
                     name: name, createdAt: new Date().toISOString()
                 });
                 document.getElementById('newTeacherName').value = '';
-                alert("Guru ditambahkan");
-            } catch(e) { console.error(e); alert("Gagal"); }
+                // alert("Guru ditambahkan"); // Removed alert for smoother UX
+            } catch(e) { console.error(e); alert("Gagal: " + e.message); }
         }
 
         window.deleteTeacher = async function(id) {
-            if(confirm("Hapus guru ini?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', id));
+            if(confirm("Apakah Anda yakin ingin menghapus data guru ini?")) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'teachers', id));
+                } catch(e) { console.error(e); alert("Gagal menghapus"); }
             }
+        }
+
+        window.downloadTemplate = function() {
+            const csvContent = "Nama Lengkap Guru (Wajib)\nContoh: Budi Santoso\nContoh: Siti Aminah\n";
+            const link = document.createElement("a");
+            link.href = "data:text/csv;charset=utf-8," + encodeURI(csvContent);
+            link.download = "template_data_guru_smpn38.csv";
+            link.click();
         }
 
         window.handleCSV = function(input) {
             const file = input.files[0];
             if(!file) return;
             const reader = new FileReader();
+            
             reader.onload = async (e) => {
-                const lines = e.target.result.split('\n');
+                const text = e.target.result;
+                const lines = text.split('\n');
                 let count = 0;
-                for(let line of lines) {
-                    const name = line.trim().replace(/['"]+/g, '');
+                
+                for(let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+                    if (i === 0 && line.toLowerCase().includes('nama') && line.toLowerCase().includes('guru')) continue; 
+                    if (line.toLowerCase().includes('contoh:')) continue;
+
+                    const name = line.replace(/['"]+/g, '');
+                    
                     if(name.length > 2 && !teachers.some(t => t.name.toLowerCase() === name.toLowerCase())) {
-                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'teachers'), {
-                            name: name, createdAt: new Date().toISOString()
-                        });
-                        count++;
+                        try {
+                            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'teachers'), {
+                                name: name, createdAt: new Date().toISOString()
+                            });
+                            count++;
+                        } catch(err) { console.error(err); }
                     }
                 }
-                alert(`Berhasil import ${count} guru.`);
+                
+                if (count > 0) alert(`Berhasil mengimpor ${count} guru baru.`);
+                else alert("Tidak ada data baru yang valid ditemukan.");
+                input.value = '';
             };
             reader.readAsText(file);
         }
@@ -372,19 +533,34 @@
             tbody.innerHTML = '';
             teachers.forEach(t => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50";
+                tr.className = "hover:bg-slate-50 transition-colors";
                 const status = inputState[t.id];
                 
+                // Helper to create radio cell
+                const createRadio = (val, colorClass) => `
+                    <td class="p-4 text-center">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="status-${t.id}" value="${val}" 
+                                ${status === val ? 'checked' : ''} 
+                                onchange="updateInputState('${t.id}', '${val}')"
+                                class="w-5 h-5 cursor-pointer text-${colorClass}-600 focus:ring-${colorClass}-500 border-gray-300">
+                        </label>
+                    </td>`;
+
                 tr.innerHTML = `
-                    <td class="p-4 font-medium">${t.name}</td>
-                    ${['H','S','I','A'].map(code => `
-                        <td class="p-4 text-center">
-                            <input type="radio" name="status-${t.id}" value="${code}" 
-                                ${status === code ? 'checked' : ''} 
-                                onchange="updateInputState('${t.id}', '${code}')"
-                                class="w-5 h-5 cursor-pointer accent-blue-600">
-                        </td>
-                    `).join('')}
+                    <td class="p-4 font-medium text-slate-700">${t.name}</td>
+                    <td class="p-4 text-center">
+                        <input type="radio" name="status-${t.id}" value="H" ${status === 'H' ? 'checked' : ''} onchange="updateInputState('${t.id}', 'H')" class="w-5 h-5 accent-emerald-500 cursor-pointer">
+                    </td>
+                    <td class="p-4 text-center">
+                        <input type="radio" name="status-${t.id}" value="S" ${status === 'S' ? 'checked' : ''} onchange="updateInputState('${t.id}', 'S')" class="w-5 h-5 accent-amber-500 cursor-pointer">
+                    </td>
+                    <td class="p-4 text-center">
+                        <input type="radio" name="status-${t.id}" value="I" ${status === 'I' ? 'checked' : ''} onchange="updateInputState('${t.id}', 'I')" class="w-5 h-5 accent-blue-500 cursor-pointer">
+                    </td>
+                    <td class="p-4 text-center">
+                        <input type="radio" name="status-${t.id}" value="A" ${status === 'A' ? 'checked' : ''} onchange="updateInputState('${t.id}', 'A')" class="w-5 h-5 accent-rose-500 cursor-pointer">
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -400,14 +576,16 @@
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'attendance', date), {
                     date: date, records: inputState, lastUpdated: new Date().toISOString()
                 });
-                alert("Data tersimpan!");
-            } catch(e) { console.error(e); alert("Gagal menyimpan"); }
+                alert("Data kehadiran berhasil disimpan!");
+            } catch(e) { console.error(e); alert("Gagal menyimpan: " + e.message); }
         }
 
         // Dashboard Logic
         function updateStats() {
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('todayDate').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = new Date().toLocaleDateString('id-ID', dateOptions);
+            document.getElementById('todayDate').innerText = dateStr;
             document.getElementById('totalTeachersDisplay').innerText = teachers.length;
 
             const record = attendanceData.find(a => a.id === today);
@@ -421,24 +599,41 @@
             if(currentChart) currentChart.destroy();
             
             currentChart = new Chart(ctx, {
-                type: 'pie',
+                type: 'doughnut', // Changed to doughnut for modern look
                 data: {
                     labels: ['Hadir', 'Sakit', 'Ijin', 'Alpa'],
                     datasets: [{
                         data: [counts.H, counts.S, counts.I, counts.A],
-                        backgroundColor: ['#22c55e', '#eab308', '#3b82f6', '#ef4444']
+                        backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#f43f5e'],
+                        borderWidth: 0,
+                        hoverOffset: 4
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                    }
+                }
             });
 
-            // Text stats
+            // Status Badge Helper
+            const badge = (label, count, color) => `
+                <div class="flex justify-between items-center p-3 bg-${color}-50 rounded-lg border border-${color}-100">
+                    <span class="text-${color}-700 font-medium text-sm">${label}</span>
+                    <span class="font-bold text-${color}-800 bg-white px-3 py-0.5 rounded-full shadow-sm text-sm">${count}</span>
+                </div>`;
+
             document.getElementById('todayStatsText').innerHTML = `
-                Hadir: <b>${counts.H}</b> | Sakit: <b>${counts.S}</b> | Ijin: <b>${counts.I}</b> | Alpa: <b>${counts.A}</b>
+                ${badge('Hadir', counts.H, 'emerald')}
+                ${badge('Sakit', counts.S, 'amber')}
+                ${badge('Ijin', counts.I, 'blue')}
+                ${badge('Alpa', counts.A, 'rose')}
             `;
         }
 
-        // Rekap Logic
         window.renderRekap = function() {
             const month = document.getElementById('filterMonth').value || new Date().toISOString().slice(0, 7);
             document.getElementById('filterMonth').value = month;
@@ -457,19 +652,26 @@
                 const total = h+s+i+a;
                 const pct = total > 0 ? Math.round((h/total)*100) : 0;
 
+                // Color based on percentage
+                let barColor = 'bg-emerald-500';
+                if(pct < 50) barColor = 'bg-rose-500';
+                else if(pct < 80) barColor = 'bg-amber-500';
+
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 border-b";
+                tr.className = "hover:bg-slate-50 transition-colors";
                 tr.innerHTML = `
-                    <td class="p-4 font-medium">${t.name}</td>
-                    <td class="p-4 text-center font-bold text-green-600">${h}</td>
-                    <td class="p-4 text-center text-yellow-600">${s}</td>
-                    <td class="p-4 text-center text-blue-600">${i}</td>
-                    <td class="p-4 text-center font-bold text-red-600">${a}</td>
-                    <td class="p-4 text-center">
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${pct}%"></div>
+                    <td class="p-4 font-medium text-slate-700">${t.name}</td>
+                    <td class="p-4 text-center font-bold text-emerald-600 bg-emerald-50/50 rounded-lg m-1">${h}</td>
+                    <td class="p-4 text-center text-amber-600 font-medium">${s}</td>
+                    <td class="p-4 text-center text-blue-600 font-medium">${i}</td>
+                    <td class="p-4 text-center font-bold text-rose-600 bg-rose-50/50 rounded-lg">${a}</td>
+                    <td class="p-4 text-center w-48">
+                        <div class="flex items-center gap-3">
+                            <div class="w-full bg-slate-200 rounded-full h-2.5 shadow-inner overflow-hidden">
+                                <div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                            </div>
+                            <span class="text-xs font-bold text-slate-600 w-8">${pct}%</span>
                         </div>
-                        <span class="text-xs">${pct}%</span>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -480,7 +682,6 @@
             const month = document.getElementById('filterMonth').value;
             let csv = `Rekap Absensi ${month}\nNama,Hadir,Sakit,Ijin,Alpa,Persentase\n`;
             
-            // Re-calculate simply for CSV
             const filtered = attendanceData.filter(a => a.date.startsWith(month));
             teachers.forEach(t => {
                 let h=0, s=0, i=0, a=0;
