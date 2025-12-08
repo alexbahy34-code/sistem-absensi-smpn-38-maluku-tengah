@@ -7,190 +7,236 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f3f4f6; -webkit-tap-highlight-color: transparent; }
-        /* Loader Custom */
+        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; -webkit-tap-highlight-color: transparent; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Hide Scrollbar but keep functionality */
+        /* Hide Scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animasi Transisi Halaman */
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen text-gray-800">
+<body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col items-center py-0 md:py-8">
 
 <script>
     // *** TEMPEL URL WEB APP DARI GOOGLE APPS SCRIPT DI SINI ***
-    const API_URL = "https://script.google.com/macros/s/AKfycbyB5aH3rLrVWQ3OZCRS-LsUwgeomiWMukCf96LDM8WN7SlxkoC2htpvk4iYcyEJiRWWYw/exec";
-
-    // Password Admin
+    const API_URL = "https://script.google.com/macros/s/AKfycbxod_XkgOnMW4hbc24RnCtRE3D5WzmUAiuJbmCkeUU1UVfEFdO2908YLtFGpUS2fhR2cg/exec";
     const ADMIN_PASS = "smpn38mt";
 </script>
 
-<div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative pb-10 overflow-hidden">
+<div class="w-full md:max-w-5xl bg-white md:rounded-3xl shadow-xl min-h-screen md:min-h-[90vh] relative overflow-hidden flex flex-col">
 
-    <div class="bg-blue-600 p-6 rounded-b-[2rem] shadow-lg z-10 relative">
-        <div class="flex items-center gap-4">
-            <div class="bg-white p-1 rounded-full shadow-md shrink-0">
-                <img src="https://iili.io/fuQdpcX.png" alt="Logo SMPN 38" class="w-14 h-14 object-contain rounded-full">
+    <div class="bg-blue-600 p-6 md:px-10 md:py-8 rounded-b-[2.5rem] md:rounded-b-[3rem] shadow-lg z-10 relative shrink-0">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-4">
+                <div class="shrink-0">
+                    <img src="https://iili.io/fuQdpcX.png" alt="Logo SMPN 38" class="w-16 h-16 md:w-20 md:h-20 object-contain filter drop-shadow-md">
+                </div>
+                <div class="text-white">
+                    <h1 class="text-xl md:text-2xl font-bold leading-tight">SMP NEGERI 38</h1>
+                    <p class="text-blue-100 text-sm font-medium tracking-wide">Maluku Tengah</p>
+                </div>
             </div>
-            <div class="text-white">
-                <h1 class="text-lg font-bold leading-tight">SMP NEGERI 38</h1>
-                <p class="text-blue-200 text-xs font-medium tracking-wide">Maluku Tengah</p>
+
+            <div class="flex justify-between md:justify-end items-end md:items-center gap-4 mt-2 md:mt-0">
+                <div class="md:text-right">
+                    <p class="text-blue-200 text-[10px] md:text-xs uppercase tracking-wider mb-1">Hari ini</p>
+                    <span id="tgl-hari-ini" class="bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-lg text-xs md:text-sm text-white font-medium shadow-sm">...</span>
+                </div>
+                <button onclick="logout()" id="btn-logout" class="hidden text-xs md:text-sm bg-red-500 hover:bg-red-600 transition px-4 py-2 rounded-lg text-white font-bold shadow-md flex items-center gap-2">
+                    Keluar <span class="font-sans">↪</span>
+                </button>
             </div>
-        </div>
-        
-        <div class="mt-6 flex justify-between items-end">
-            <div>
-                <p class="text-blue-200 text-[10px] uppercase tracking-wider mb-1">Hari ini</p>
-                <span id="tgl-hari-ini" class="bg-blue-500/40 backdrop-blur-sm border border-blue-400/30 px-3 py-1 rounded-lg text-xs text-white font-medium">...</span>
-            </div>
-            <button onclick="logout()" id="btn-logout" class="hidden text-xs bg-red-500 hover:bg-red-600 transition px-3 py-1.5 rounded-lg text-white font-bold shadow-sm flex items-center gap-1">
-                Keluar <span>↪</span>
-            </button>
         </div>
     </div>
 
-    <div id="loading" class="hidden absolute inset-0 bg-white/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
+    <div id="loading" class="hidden absolute inset-0 bg-white/80 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
         <div class="loader mb-4"></div>
-        <p class="text-gray-600 text-sm font-medium animate-pulse">Memproses Data...</p>
+        <p class="text-gray-600 text-sm font-medium animate-pulse">Sedang Memproses...</p>
     </div>
 
-    <div id="page-login" class="p-8 mt-6 fade-in">
-        <div class="text-center mb-8">
-            <h2 class="text-2xl font-bold text-gray-800">Login Admin</h2>
-            <p class="text-gray-400 text-sm mt-1">Silakan masukkan kode akses</p>
-        </div>
-        <input type="password" id="pass-input" placeholder="Kode Akses..." class="w-full p-4 border border-gray-200 rounded-2xl mb-4 bg-gray-50 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition text-center text-lg tracking-widest">
-        <button onclick="login()" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700 hover:shadow-blue-500/30 transition transform active:scale-95">MASUK APLIKASI</button>
-    </div>
-
-    <div id="page-dashboard" class="hidden p-6 space-y-4">
-        <p class="text-gray-500 text-sm font-medium mb-2">Menu Utama</p>
+    <div class="flex-1 overflow-y-auto no-scrollbar relative">
         
-        <div class="grid grid-cols-1 gap-4">
-            <div onclick="bukaAbsen()" class="bg-white p-5 rounded-2xl shadow border border-gray-100 flex items-center gap-4 cursor-pointer hover:bg-blue-50 active:scale-95 transition group">
-                <div class="bg-blue-100 p-4 rounded-xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition"> 📝 </div>
-                <div><h3 class="font-bold text-gray-800">Input Absensi</h3><p class="text-xs text-gray-400">Isi kehadiran guru hari ini</p></div>
+        <div id="page-login" class="p-8 md:p-12 fade-in max-w-lg mx-auto mt-10 md:mt-20">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Login Admin</h2>
+                <p class="text-gray-400 text-sm mt-2">Silakan masukkan kode akses sekolah</p>
             </div>
-
-            <div onclick="bukaRekap()" class="bg-white p-5 rounded-2xl shadow border border-gray-100 flex items-center gap-4 cursor-pointer hover:bg-purple-50 active:scale-95 transition group">
-                <div class="bg-purple-100 p-4 rounded-xl text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition"> 📊 </div>
-                <div><h3 class="font-bold text-gray-800">Laporan Absensi</h3><p class="text-xs text-gray-400">Lihat rekap & statistik</p></div>
+            <div class="bg-gray-50 p-2 rounded-2xl border border-gray-200 focus-within:ring-4 focus-within:ring-blue-100 focus-within:border-blue-500 transition shadow-inner">
+                <input type="password" id="pass-input" placeholder="Kode Akses..." class="w-full p-4 bg-transparent outline-none text-center text-xl tracking-[0.3em] font-bold text-gray-700">
             </div>
+            <button onclick="login()" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700 hover:shadow-blue-500/30 transition transform active:scale-[0.98] mt-6 text-lg">MASUK APLIKASI</button>
+        </div>
 
-            <div onclick="bukaGuru()" class="bg-white p-5 rounded-2xl shadow border border-gray-100 flex items-center gap-4 cursor-pointer hover:bg-orange-50 active:scale-95 transition group">
-                <div class="bg-orange-100 p-4 rounded-xl text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition"> 👥 </div>
-                <div><h3 class="font-bold text-gray-800">Data Guru</h3><p class="text-xs text-gray-400">Tambah atau hapus nama</p></div>
+        <div id="page-dashboard" class="hidden p-6 md:p-10 fade-in h-full flex flex-col justify-center md:justify-start">
+            <p class="text-gray-500 text-sm font-bold uppercase tracking-widest mb-6 border-b pb-2">Menu Utama</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
+                
+                <div onclick="bukaAbsen()" class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition group-hover:bg-blue-100"></div>
+                    <div class="relative z-10 flex md:flex-col items-center md:items-start gap-4 md:gap-6">
+                        <div class="bg-blue-100 p-4 rounded-2xl text-blue-600 text-2xl md:text-4xl group-hover:scale-110 transition">📝</div>
+                        <div>
+                            <h3 class="font-bold text-lg md:text-xl text-gray-800">Input Absensi</h3>
+                            <p class="text-xs md:text-sm text-gray-500 mt-1">Isi kehadiran guru harian</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="bukaRekap()" class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition group-hover:bg-purple-100"></div>
+                    <div class="relative z-10 flex md:flex-col items-center md:items-start gap-4 md:gap-6">
+                        <div class="bg-purple-100 p-4 rounded-2xl text-purple-600 text-2xl md:text-4xl group-hover:scale-110 transition">📊</div>
+                        <div>
+                            <h3 class="font-bold text-lg md:text-xl text-gray-800">Laporan Absensi</h3>
+                            <p class="text-xs md:text-sm text-gray-500 mt-1">Rekapitulasi data & Statistik</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="bukaGuru()" class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition group-hover:bg-orange-100"></div>
+                    <div class="relative z-10 flex md:flex-col items-center md:items-start gap-4 md:gap-6">
+                        <div class="bg-orange-100 p-4 rounded-2xl text-orange-600 text-2xl md:text-4xl group-hover:scale-110 transition">👥</div>
+                        <div>
+                            <h3 class="font-bold text-lg md:text-xl text-gray-800">Data Guru</h3>
+                            <p class="text-xs md:text-sm text-gray-500 mt-1">Kelola daftar nama guru</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
 
-    <div id="page-absen" class="hidden p-6 pb-20">
-        <button onclick="nav('page-dashboard')" class="mb-4 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 font-medium">
-            <span class="text-lg">←</span> Kembali
-        </button>
-        <h2 class="text-2xl font-bold mb-6 text-gray-800">Form Absensi</h2>
+        <div id="page-absen" class="hidden p-6 md:p-10 fade-in">
+            <button onclick="nav('page-dashboard')" class="mb-6 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-2 font-medium transition hover:-translate-x-1">
+                <span class="text-xl">←</span> Kembali ke Menu
+            </button>
+            
+            <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-4">Form Absensi Harian</h2>
 
-        <form id="form-absen" class="space-y-5">
-            <div>
-                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Tanggal</label>
-                <input type="date" id="input-date" class="w-full p-4 border rounded-xl mt-1 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition" required>
+                <form id="form-absen">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                        
+                        <div class="space-y-5">
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Tanggal</label>
+                                <input type="date" id="input-date" class="w-full p-4 border border-gray-200 rounded-xl mt-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Nama Guru</label>
+                                <div class="relative mt-2">
+                                    <select id="input-guru" class="w-full p-4 border border-gray-200 rounded-xl bg-white appearance-none focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer" required>
+                                        <option value="">Pilih...</option>
+                                    </select>
+                                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5">
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-2 block">Status Kehadiran</label>
+                                <div class="grid grid-cols-4 gap-3">
+                                    <label class="cursor-pointer relative group">
+                                        <input type="radio" name="status" value="Hadir" class="peer sr-only" required>
+                                        <div class="p-3 border rounded-xl bg-white text-center hover:bg-gray-50 peer-checked:bg-green-100 peer-checked:border-green-500 peer-checked:text-green-700 transition h-full flex flex-col justify-center items-center shadow-sm">
+                                            <span class="text-xl mb-1 group-hover:scale-110 transition">✅</span>
+                                            <span class="text-[10px] md:text-xs font-bold">Hadir</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer relative group">
+                                        <input type="radio" name="status" value="Sakit" class="peer sr-only">
+                                        <div class="p-3 border rounded-xl bg-white text-center hover:bg-gray-50 peer-checked:bg-red-100 peer-checked:border-red-500 peer-checked:text-red-700 transition h-full flex flex-col justify-center items-center shadow-sm">
+                                            <span class="text-xl mb-1 group-hover:scale-110 transition">🤒</span>
+                                            <span class="text-[10px] md:text-xs font-bold">Sakit</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer relative group">
+                                        <input type="radio" name="status" value="Izin" class="peer sr-only">
+                                        <div class="p-3 border rounded-xl bg-white text-center hover:bg-gray-50 peer-checked:bg-yellow-100 peer-checked:border-yellow-500 peer-checked:text-yellow-700 transition h-full flex flex-col justify-center items-center shadow-sm">
+                                            <span class="text-xl mb-1 group-hover:scale-110 transition">📩</span>
+                                            <span class="text-[10px] md:text-xs font-bold">Izin</span>
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer relative group">
+                                        <input type="radio" name="status" value="Alpha" class="peer sr-only">
+                                        <div class="p-3 border rounded-xl bg-white text-center hover:bg-gray-50 peer-checked:bg-gray-200 peer-checked:border-gray-500 peer-checked:text-gray-700 transition h-full flex flex-col justify-center items-center shadow-sm">
+                                            <span class="text-xl mb-1 group-hover:scale-110 transition">❌</span>
+                                            <span class="text-[10px] md:text-xs font-bold">Alpha</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Catatan</label>
+                                <textarea id="input-catatan" placeholder="Keterangan tambahan (Opsional)..." class="w-full p-4 border border-gray-200 rounded-xl mt-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition text-sm h-24 resize-none"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 md:py-5 rounded-xl font-bold text-lg hover:shadow-xl hover:shadow-blue-500/30 active:scale-[0.99] transition mt-8">KIRIM DATA ABSENSI</button>
+                </form>
             </div>
-            <div>
-                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Nama Guru</label>
-                <div class="relative">
-                    <select id="input-guru" class="w-full p-4 border rounded-xl mt-1 bg-white appearance-none focus:ring-2 focus:ring-blue-500 outline-none transition" required>
-                        <option value="">Pilih...</option>
-                    </select>
-                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">▼</div>
+        </div>
+
+        <div id="page-guru" class="hidden p-6 md:p-10 fade-in">
+            <button onclick="nav('page-dashboard')" class="mb-6 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-2 font-medium transition hover:-translate-x-1">
+                <span class="text-xl">←</span> Kembali ke Menu
+            </button>
+            
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800">Kelola Data Guru</h2>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex gap-3">
+                    <input type="text" id="nama-baru" placeholder="Tulis Nama Guru Baru..." class="flex-1 p-3 border-b-2 border-transparent focus:border-green-500 outline-none bg-transparent transition">
+                    <button onclick="tambahGuru()" class="bg-green-600 text-white px-6 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-200 hover:-translate-y-0.5 active:translate-y-0">Tambah +</button>
+                </div>
+                <div id="list-guru" class="space-y-3 max-h-[500px] overflow-y-auto pr-2 pb-10"></div>
+            </div>
+        </div>
+
+        <div id="page-rekap" class="hidden p-6 md:p-10 fade-in">
+            <button onclick="nav('page-dashboard')" class="mb-6 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-2 font-medium transition hover:-translate-x-1">
+                <span class="text-xl">←</span> Kembali ke Menu
+            </button>
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                <h2 class="text-2xl font-bold text-gray-800">Laporan Absensi</h2>
+                
+                <div class="bg-gray-100 p-1 rounded-full inline-flex self-start md:self-auto overflow-x-auto max-w-full">
+                    <button onclick="tarikData('minggu')" class="filter-btn px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition whitespace-nowrap">Minggu Ini</button>
+                    <button onclick="tarikData('bulan')" class="filter-btn px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition whitespace-nowrap">Bulan Ini</button>
+                    <button onclick="tarikData('semester')" class="filter-btn px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition whitespace-nowrap">Semester</button>
                 </div>
             </div>
-            <div>
-                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-2 block">Status Kehadiran</label>
-                <div class="grid grid-cols-4 gap-3">
-                    <label class="cursor-pointer relative">
-                        <input type="radio" name="status" value="Hadir" class="peer sr-only" required>
-                        <div class="p-3 border rounded-xl bg-white text-center hover:bg-gray-50 peer-checked:bg-green-100 peer-checked:border-green-500 peer-checked:text-green-700 transition h-full flex flex-col justify-center items-center">
-                            <span class="text-xl mb-1">✅</span>
-                            <span class="text-[10px] font-bold">Hadir</span>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer relative">
-                        <input type="radio" name="status" value="Sakit" class="peer sr-only">
-                        <div class="p-3 border rounded-xl bg-white text-center hover:bg-gray-50 peer-checked:bg-red-100 peer-checked:border-red-500 peer-checked:text-red-700 transition h-full flex flex-col justify-center items-center">
-                            <span class="text-xl mb-1">🤒</span>
-                            <span class="text-[10px] font-bold">Sakit</span>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer relative">
-                        <input type="radio" name="status" value="Izin" class="peer sr-only">
-                        <div class="p-3 border rounded-xl bg-white text-center hover:bg-gray-50 peer-checked:bg-yellow-100 peer-checked:border-yellow-500 peer-checked:text-yellow-700 transition h-full flex flex-col justify-center items-center">
-                            <span class="text-xl mb-1">📩</span>
-                            <span class="text-[10px] font-bold">Izin</span>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer relative">
-                        <input type="radio" name="status" value="Alpha" class="peer sr-only">
-                        <div class="p-3 border rounded-xl bg-white text-center hover:bg-gray-50 peer-checked:bg-gray-200 peer-checked:border-gray-500 peer-checked:text-gray-700 transition h-full flex flex-col justify-center items-center">
-                            <span class="text-xl mb-1">❌</span>
-                            <span class="text-[10px] font-bold">Alpha</span>
-                        </div>
-                    </label>
+
+            <div id="rekap-stats" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-8 text-center"></div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-600 uppercase tracking-wider border-b font-bold text-xs">
+                            <tr>
+                                <th class="p-4 sticky left-0 bg-gray-50 z-10 min-w-[150px]">Nama Guru</th>
+                                <th class="p-4 text-center text-green-600 w-20">Hadir</th>
+                                <th class="p-4 text-center text-red-600 w-20">Sakit</th>
+                                <th class="p-4 text-center text-yellow-600 w-20">Izin</th>
+                                <th class="p-4 text-center text-gray-600 w-20">Alpha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rekap-body" class="divide-y divide-gray-100"></tbody>
+                    </table>
                 </div>
             </div>
-            <div>
-                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">Catatan</label>
-                <textarea id="input-catatan" placeholder="Keterangan tambahan (Opsional)..." class="w-full p-4 border rounded-xl mt-1 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition text-sm h-24 resize-none"></textarea>
-            </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-xl font-bold hover:shadow-lg hover:shadow-blue-500/40 active:scale-95 transition mt-4">KIRIM DATA</button>
-        </form>
-    </div>
-
-    <div id="page-guru" class="hidden p-6">
-        <button onclick="nav('page-dashboard')" class="mb-4 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 font-medium">
-            <span class="text-lg">←</span> Kembali
-        </button>
-        <h2 class="text-xl font-bold mb-4 text-gray-800">Kelola Data Guru</h2>
-
-        <div class="flex gap-2 mb-6">
-            <input type="text" id="nama-baru" placeholder="Nama Guru Baru..." class="flex-1 p-3 border rounded-xl text-sm focus:ring-2 focus:ring-green-500 outline-none">
-            <button onclick="tambahGuru()" class="bg-green-600 text-white px-5 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-200">+</button>
         </div>
 
-        <div id="list-guru" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 pb-4"></div>
     </div>
-
-    <div id="page-rekap" class="hidden p-6 pb-20">
-        <button onclick="nav('page-dashboard')" class="mb-4 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 font-medium">
-            <span class="text-lg">←</span> Kembali
-        </button>
-        <h2 class="text-xl font-bold mb-4 text-gray-800">Laporan Absensi</h2>
-
-        <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
-            <button onclick="tarikData('minggu')" class="bg-white border border-gray-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition shadow-sm active:bg-blue-100">Mingguan</button>
-            <button onclick="tarikData('bulan')" class="bg-white border border-gray-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition shadow-sm active:bg-blue-100">Bulanan</button>
-            <button onclick="tarikData('semester')" class="bg-white border border-gray-200 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition shadow-sm active:bg-blue-100">Semester</button>
-        </div>
-
-        <div id="rekap-stats" class="grid grid-cols-4 gap-3 mb-6 text-center text-xs"></div>
-
-        <div class="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
-            <table class="w-full text-xs text-left">
-                <thead class="bg-gray-50 font-bold text-gray-600 uppercase tracking-wider border-b">
-                    <tr>
-                        <th class="p-3 sticky left-0 bg-gray-50">Nama</th>
-                        <th class="p-3 text-center text-green-600">H</th>
-                        <th class="p-3 text-center text-red-600">S</th>
-                        <th class="p-3 text-center text-yellow-600">I</th>
-                        <th class="p-3 text-center text-gray-600">A</th>
-                    </tr>
-                </thead>
-                <tbody id="rekap-body" class="divide-y divide-gray-100"></tbody>
-            </table>
-        </div>
-        <p class="text-[10px] text-gray-400 mt-2 text-center">*Geser tabel ke kiri untuk melihat data detail</p>
-    </div>
-
 </div>
 
 <script>
@@ -207,12 +253,19 @@
 
     // --- NAVIGASI ---
     function nav(id) {
-        document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('[id^="page-"]').forEach(el => {
+            el.classList.add('hidden');
+            el.classList.remove('fade-in'); // Reset animasi
+        });
         const target = document.getElementById(id);
         target.classList.remove('hidden');
-        // Simple fade in effect
-        target.classList.add('animate-[fadeIn_0.3s_ease-out]');
-        window.scrollTo(0,0);
+        // Trigger reflow agar animasi jalan ulang
+        void target.offsetWidth; 
+        target.classList.add('fade-in');
+        
+        // Auto scroll ke atas content
+        const contentArea = document.querySelector('.overflow-y-auto');
+        if(contentArea) contentArea.scrollTop = 0;
     }
 
     function login() {
@@ -221,20 +274,20 @@
             document.getElementById('btn-logout').classList.remove('hidden');
             init();
         } else { 
-            alert('Password Salah!'); 
+            alert('❌ Password Salah!'); 
             document.getElementById('pass-input').value = '';
             document.getElementById('pass-input').focus();
         }
     }
 
     function logout() {
-        if(confirm("Yakin ingin keluar?")) {
+        if(confirm("Yakin ingin keluar aplikasi?")) {
             location.reload();
         }
     }
 
     function init() {
-        const options = { weekday: 'long', day: 'numeric', month: 'short' };
+        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
         document.getElementById('tgl-hari-ini').innerText = new Date().toLocaleDateString('id-ID', options);
         renderGuruSelect();
     }
@@ -247,15 +300,15 @@
 
     function renderGuruSelect() {
         const sel = document.getElementById('input-guru');
-        sel.innerHTML = '<option value="">Pilih Guru...</option>' + teachers.sort().map(t => `<option value="${t}">${t}</option>`).join('');
+        sel.innerHTML = '<option value="">Pilih Nama Guru...</option>' + teachers.sort().map(t => `<option value="${t}">${t}</option>`).join('');
     }
 
     function renderListGuru() {
         const div = document.getElementById('list-guru');
         div.innerHTML = teachers.sort().map(t => `
-            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition">
-                <span class="text-sm font-medium text-gray-700">${t}</span>
-                <button onclick="hapusGuru('${t}')" class="text-red-500 text-xs border border-red-100 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition">Hapus</button>
+            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition group">
+                <span class="text-sm md:text-base font-medium text-gray-700">${t}</span>
+                <button onclick="hapusGuru('${t}')" class="text-red-400 hover:text-red-600 transition p-2 opacity-50 group-hover:opacity-100">🗑 Hapus</button>
             </div>
         `).join('');
     }
@@ -267,18 +320,18 @@
             localStorage.setItem('guru_smp38', JSON.stringify(teachers));
             document.getElementById('nama-baru').value = '';
             renderListGuru(); renderGuruSelect();
-        } else { alert('Nama kosong atau sudah ada'); }
+        } else { alert('Nama kosong atau sudah ada!'); }
     }
 
     function hapusGuru(nama) {
-        if(confirm('Hapus ' + nama + '?')) {
+        if(confirm('Hapus ' + nama + ' dari daftar?')) {
             teachers = teachers.filter(t => t !== nama);
             localStorage.setItem('guru_smp38', JSON.stringify(teachers));
             renderListGuru(); renderGuruSelect();
         }
     }
 
-    // --- FITUR ABSEN (KIRIM KE GOOGLE SHEET) ---
+    // --- FITUR ABSEN ---
     function bukaAbsen() {
         nav('page-absen');
         document.getElementById('input-date').valueAsDate = new Date();
@@ -310,16 +363,16 @@
         })
         .catch(err => {
             document.getElementById('loading').classList.add('hidden');
-            console.log(err);
-            // Google Apps Script sering return error CORS walau sukses
             alert("✅ Data Terkirim (Silakan cek di Spreadsheet)."); 
             document.getElementById('form-absen').reset();
         });
     });
 
-    // --- FITUR REKAP (AMBIL DARI GOOGLE SHEET) ---
+    // --- FITUR REKAP ---
     function bukaRekap() {
         nav('page-rekap');
+        // Default load null/empty or prompt user to click filter
+        document.getElementById('rekap-body').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-400">Silakan pilih filter waktu di atas untuk memuat data.</td></tr>`;
     }
 
     function tarikData(filterType) {
@@ -327,15 +380,13 @@
 
         document.getElementById('loading').classList.remove('hidden');
         
-        // Ubah warna tombol aktif
-        document.querySelectorAll('#page-rekap button[onclick^="tarikData"]').forEach(btn => {
-            btn.classList.remove('bg-blue-600', 'text-white', 'border-transparent');
-            btn.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
+        // Reset styles tombol filter
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.className = "filter-btn px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition whitespace-nowrap bg-transparent text-gray-500 hover:bg-gray-200";
         });
         const activeBtn = document.querySelector(`button[onclick="tarikData('${filterType}')"]`);
         if(activeBtn) {
-            activeBtn.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
-            activeBtn.classList.add('bg-blue-600', 'text-white', 'border-transparent');
+            activeBtn.className = "filter-btn px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition whitespace-nowrap bg-blue-600 text-white shadow-md";
         }
 
         fetch(API_URL + "?action=read")
@@ -370,15 +421,12 @@
             });
         }
 
-        // Hitung Stats
         const stats = {Hadir:0, Sakit:0, Izin:0, Alpha:0};
         const guruStats = {};
         teachers.forEach(t => guruStats[t] = {H:0, S:0, I:0, A:0});
 
         filtered.forEach(r => {
-            // Perbaiki jika format status berbeda huruf besar/kecil
             const statusCapitalized = r.status.charAt(0).toUpperCase() + r.status.slice(1).toLowerCase();
-            
             if(stats[statusCapitalized] !== undefined) stats[statusCapitalized]++;
             
             if(guruStats[r.teacher_name]) {
@@ -388,29 +436,34 @@
             }
         });
 
-        // Render Total Cards
-        const colorMap = {Hadir:'text-green-600 bg-green-50', Sakit:'text-red-600 bg-red-50', Izin:'text-yellow-600 bg-yellow-50', Alpha:'text-gray-600 bg-gray-50'};
+        // Update Cards
+        const colorMap = {
+            Hadir:'text-green-600 bg-green-50 border-green-100', 
+            Sakit:'text-red-600 bg-red-50 border-red-100', 
+            Izin:'text-yellow-600 bg-yellow-50 border-yellow-100', 
+            Alpha:'text-gray-600 bg-gray-50 border-gray-200'
+        };
         
         document.getElementById('rekap-stats').innerHTML = Object.entries(stats).map(([k,v]) => `
-            <div class="p-3 border rounded-xl shadow-sm ${colorMap[k]} flex flex-col items-center justify-center">
-                <div class="font-bold text-xl">${v}</div>
-                <div class="text-[10px] uppercase font-bold tracking-wide opacity-70">${k}</div>
+            <div class="p-4 border rounded-2xl shadow-sm ${colorMap[k]} flex flex-col items-center justify-center transition hover:scale-105">
+                <div class="font-bold text-2xl md:text-3xl mb-1">${v}</div>
+                <div class="text-[10px] md:text-xs uppercase font-bold tracking-wider opacity-80">${k}</div>
             </div>
         `).join('');
 
-        // Render Tabel
+        // Update Table
         document.getElementById('rekap-body').innerHTML = Object.entries(guruStats).map(([n, s]) => `
-            <tr class="hover:bg-blue-50 transition border-b last:border-0">
-                <td class="p-3 font-medium text-gray-700 bg-white sticky left-0 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">${n}</td>
-                <td class="p-3 text-center ${s.H > 0 ? 'bg-green-100 text-green-700 font-bold' : 'text-gray-300'}">${s.H}</td>
-                <td class="p-3 text-center ${s.S > 0 ? 'bg-red-100 text-red-700 font-bold' : 'text-gray-300'}">${s.S}</td>
-                <td class="p-3 text-center ${s.I > 0 ? 'bg-yellow-100 text-yellow-700 font-bold' : 'text-gray-300'}">${s.I}</td>
-                <td class="p-3 text-center ${s.A > 0 ? 'bg-gray-200 text-gray-700 font-bold' : 'text-gray-300'}">${s.A}</td>
+            <tr class="hover:bg-blue-50 transition border-b last:border-0 group">
+                <td class="p-4 font-medium text-gray-700 bg-white sticky left-0 group-hover:bg-blue-50 transition shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] md:shadow-none">${n}</td>
+                <td class="p-4 text-center ${s.H > 0 ? 'text-green-700 font-bold bg-green-50/50' : 'text-gray-300'}">${s.H}</td>
+                <td class="p-4 text-center ${s.S > 0 ? 'text-red-700 font-bold bg-red-50/50' : 'text-gray-300'}">${s.S}</td>
+                <td class="p-4 text-center ${s.I > 0 ? 'text-yellow-700 font-bold bg-yellow-50/50' : 'text-gray-300'}">${s.I}</td>
+                <td class="p-4 text-center ${s.A > 0 ? 'text-gray-700 font-bold bg-gray-100' : 'text-gray-300'}">${s.A}</td>
             </tr>
         `).join('');
         
         if(filtered.length === 0) {
-            document.getElementById('rekap-body').innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">Belum ada data untuk periode ini</td></tr>`;
+            document.getElementById('rekap-body').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-400 italic">Tidak ada data untuk periode ini.</td></tr>`;
         }
     }
 </script>
