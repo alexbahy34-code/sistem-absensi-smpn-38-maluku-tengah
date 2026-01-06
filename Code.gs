@@ -9,7 +9,7 @@ const SHEET_ABSENSI = "Absensi";
 const SHEET_PEGAWAI = "DataPegawai";
 
 // --- GANTI PASSWORD DI SINI (Hanya Anda yang tahu) ---
-const APP_PASSWORD = "smpn38kepsek"; 
+const APP_PASSWORD = "smpn38mt"; 
 
 function doGet(e) { return handleRequest(e); }
 function doPost(e) { return handleRequest(e); }
@@ -133,3 +133,4 @@ function handleSaveAbsence(ss, req) {
 function responseJSON(data) {
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }
+
