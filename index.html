@@ -18,9 +18,17 @@
         .guru-card.disabled::after { content: '✓ SUDAH'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-10deg); font-weight: 900; color: #64748b; border: 2px dashed #64748b; padding: 5px 10px; border-radius: 8px; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #764ba2; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         
+        /* Table Styles */
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .rekap-table th { background: #f3f4f6; padding: 10px; text-align: left; font-weight: bold; color: #4b5563; border-bottom: 2px solid #e5e7eb; }
+        .rekap-table td { padding: 10px; border-bottom: 1px solid #e5e7eb; color: #374151; }
+        .rekap-table tr:hover { background: #f9fafb; }
+        .badge { padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; color: white; }
+
         .btn-delete {
             position: absolute; top: 8px; right: 8px; 
             background: #fee2e2; color: #ef4444; 
@@ -35,15 +43,14 @@
 <body class="p-4 lg:p-8">
 
     <script>
-        // MASUKKAN URL DEPLOYMENT GOOGLE SCRIPT TERBARU DI SINI
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydkCzOiMa00X1OYe4CpVRQcLV58meo-kmTbA_a_mIVsebgaaezC2ZJp5PtT5mmWLAbYg/exec"; 
+        // MASUKKAN URL DEPLOYMENT BARU DI SINI
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxI89W5pXV3wvlX3H6-ePAjgXd42a6_rLWWp9NiOg_vLOyOz7ud2XgRckP02GqpAB6DLA/exec"; 
     </script>
 
     <div id="login-modal" class="modal">
         <div class="bg-white p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl">
             <h2 class="text-2xl font-bold mb-2 text-slate-800">🔐 Login Kepala Sekolah</h2>
             <p class="text-sm text-slate-500 mb-6">Area terbatas. Silakan masukkan kata sandi.</p>
-            
             <form onsubmit="processLogin(event)">
                 <input type="password" id="admin-password" class="w-full p-3 border-2 border-slate-200 rounded-xl mb-4 text-center font-bold text-lg" placeholder="Kata Sandi..." required>
                 <div class="flex gap-2">
@@ -51,6 +58,49 @@
                     <button type="submit" class="flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold">Masuk</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="rekap-modal" class="modal items-start pt-10 overflow-y-auto">
+        <div class="bg-white p-6 rounded-2xl w-full max-w-4xl shadow-2xl m-4 relative">
+            <button onclick="document.getElementById('rekap-modal').classList.remove('active')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+            
+            <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                📊 Laporan Kehadiran
+            </h2>
+
+            <div class="flex flex-wrap gap-2 mb-4 bg-slate-100 p-2 rounded-xl w-fit">
+                <button onclick="loadRekap('mingguan')" class="filter-btn px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-white hover:shadow-sm transition-all bg-white shadow-sm ring-1 ring-slate-200">📅 Minggu Ini</button>
+                <button onclick="loadRekap('bulanan')" class="filter-btn px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-white hover:shadow-sm transition-all">📆 Bulan Ini</button>
+                <button onclick="loadRekap('semester')" class="filter-btn px-4 py-2 rounded-lg text-sm font-bold text-slate-600 hover:bg-white hover:shadow-sm transition-all">📚 Semester Ini</button>
+            </div>
+
+            <div id="rekap-loading" class="hidden text-center py-10">
+                <div class="loader mx-auto mb-2"></div>
+                <p class="text-slate-500 text-sm">Menghitung data...</p>
+            </div>
+
+            <div id="rekap-content" class="overflow-x-auto max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <table class="rekap-table">
+                    <thead class="sticky top-0 z-10">
+                        <tr>
+                            <th class="w-10">No</th>
+                            <th>Nama Pegawai</th>
+                            <th class="w-16 text-center">Hadir</th>
+                            <th class="w-16 text-center">Sakit</th>
+                            <th class="w-16 text-center">Izin</th>
+                            <th class="w-16 text-center">Alpha</th>
+                            <th class="w-20 text-center">Kehadiran</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekap-body">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4 text-xs text-slate-500 text-right italic">
+                * Data diurutkan berdasarkan persentase kehadiran tertinggi.
+            </div>
         </div>
     </div>
 
@@ -66,24 +116,28 @@
     </div>
 
     <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
-        
         <aside class="w-full lg:w-1/3 glass p-6 h-fit flex flex-col gap-4">
             <div class="text-center mb-2">
                 <h1 class="text-2xl font-black text-slate-800">SMPN 38</h1>
                 <p class="text-sm font-bold text-purple-600 tracking-widest">MALUKU TENGAH</p>
             </div>
 
-            <button id="btn-tambah-pegawai" onclick="tambahPegawai()" class="hidden w-full py-3 bg-indigo-100 text-indigo-700 border-2 border-indigo-200 font-bold rounded-xl hover:bg-indigo-200 transition-all flex justify-center items-center gap-2 mb-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                <span>Tambah Pegawai Baru</span>
-            </button>
+            <div id="admin-tools" class="hidden flex-col gap-2">
+                <button onclick="tambahPegawai()" class="w-full py-3 bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold rounded-xl hover:bg-indigo-100 transition-all flex justify-center items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Tambah Pegawai</span>
+                </button>
+                <button onclick="bukaRekap()" class="w-full py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-xl hover:bg-emerald-100 transition-all flex justify-center items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>Lihat Rekapitulasi</span>
+                </button>
+            </div>
 
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">📅 Tanggal</label>
                     <input type="date" id="tgl-absen" class="w-full p-3 border-2 border-slate-200 rounded-xl font-bold text-slate-700" onchange="loadData()">
                 </div>
-
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">📝 Status Kehadiran</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -93,12 +147,10 @@
                         <label class="cursor-pointer"><input type="radio" name="status" value="Alpha" class="peer sr-only"><div class="p-3 text-center border-2 rounded-xl peer-checked:bg-slate-700 peer-checked:text-white peer-checked:border-slate-800 font-bold text-sm">Alpha</div></label>
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">💬 Catatan</label>
                     <textarea id="catatan" rows="2" class="w-full p-3 border-2 border-slate-200 rounded-xl text-sm" placeholder="Opsional..."></textarea>
                 </div>
-
                 <button onclick="simpanAbsen()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all active:scale-95 flex justify-center items-center gap-2">
                     <span>KIRIM DATA</span>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
@@ -138,7 +190,6 @@
             loadData();
         });
 
-        // --- FETCH DATA UTAMA ---
         async function loadData() {
             const date = document.getElementById('tgl-absen').value;
             const loader = document.getElementById('loading');
@@ -151,7 +202,6 @@
             loader.classList.remove('hidden');
 
             try {
-                // Fetch History & Data Pegawai Parallel
                 const [resHistory, resPegawai] = await Promise.all([
                     fetch(`${SCRIPT_URL}?action=check&date=${date}`).then(r => r.json()),
                     fetch(`${SCRIPT_URL}?action=getPegawai`).then(r => r.json())
@@ -163,11 +213,10 @@
                     daftarPegawai = resPegawai.data;
                     document.getElementById('total-pegawai-info').innerText = `Total: ${daftarPegawai.length} Orang`;
                 }
-
                 renderGrid();
             } catch (err) {
                 console.error(err);
-                Swal.fire('Koneksi Error', 'Gagal memuat data dari server.', 'error');
+                Swal.fire('Koneksi Error', 'Gagal memuat data.', 'error');
             } finally {
                 loader.classList.add('hidden');
             }
@@ -184,7 +233,6 @@
                     const isDisabled = status ? 'disabled' : '';
                     const isSelected = selectedPegawai === nama ? 'border-purple-500 ring-2 ring-purple-200 bg-purple-50' : 'border-slate-100 bg-white';
                     
-                    // Tombol Hapus (Hanya muncul jika Admin Login)
                     const deleteBtn = activeAdminPassword 
                         ? `<div onclick="hapusPegawai('${nama}', event)" class="btn-delete" title="Hapus Pegawai">✕</div>` 
                         : '';
@@ -210,7 +258,7 @@
             renderGrid();
         }
 
-        // --- LOGIN AMAN (VERIFIKASI SERVER) ---
+        // --- AUTH & ADMIN TOOLS ---
         function openLoginModal() {
             document.getElementById('login-modal').classList.add('active');
             document.getElementById('admin-password').focus();
@@ -223,14 +271,11 @@
         function processLogin(e) {
             if(e) e.preventDefault();
             const pass = document.getElementById('admin-password').value;
-            
-            // Tampilkan Loading di tombol
             const btn = document.querySelector('#login-modal button[type="submit"]');
             const originalText = btn.innerText;
             btn.innerText = 'Memeriksa...';
             btn.disabled = true;
 
-            // Kirim ke server untuk verifikasi
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: 'login', password: pass })
@@ -238,21 +283,16 @@
             .then(res => res.json())
             .then(res => {
                 if(res.status === 'success') {
-                    activeAdminPassword = pass; // Simpan di memori sementara
+                    activeAdminPassword = pass;
                     updateAdminUI(true);
                     closeLoginModal();
-                    Swal.fire({icon: 'success', title: 'Selamat Datang', text: 'Mode Kepala Sekolah Aktif', timer: 1500, showConfirmButton: false});
+                    Swal.fire({icon: 'success', title: 'Akses Diterima', text: 'Selamat bekerja, Bapak/Ibu Kepala Sekolah.', timer: 1500, showConfirmButton: false});
                 } else {
-                    Swal.fire({icon: 'error', title: 'Kata Sandi Salah', text: 'Akses ditolak.'});
+                    Swal.fire({icon: 'error', title: 'Kata Sandi Salah'});
                 }
             })
-            .catch(err => {
-                Swal.fire('Error', 'Gagal menghubungi server verifikasi', 'error');
-            })
-            .finally(() => {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            });
+            .catch(err => Swal.fire('Error', 'Koneksi gagal', 'error'))
+            .finally(() => { btn.innerText = originalText; btn.disabled = false; });
         }
 
         function logout() {
@@ -262,126 +302,106 @@
         }
 
         function updateAdminUI(isAdmin) {
-            const btnLogin = document.getElementById('btn-admin-login');
-            const adminIndicator = document.getElementById('admin-indicator');
-            const btnTambah = document.getElementById('btn-tambah-pegawai');
-
-            if (isAdmin) {
-                btnLogin.classList.add('hidden');
-                adminIndicator.classList.remove('hidden');
-                adminIndicator.classList.add('flex');
-                btnTambah.classList.remove('hidden');
-            } else {
-                btnLogin.classList.remove('hidden');
-                adminIndicator.classList.add('hidden');
-                adminIndicator.classList.remove('flex');
-                btnTambah.classList.add('hidden');
-            }
+            document.getElementById('btn-admin-login').classList.toggle('hidden', isAdmin);
+            document.getElementById('admin-indicator').classList.toggle('hidden', !isAdmin);
+            document.getElementById('admin-indicator').classList.toggle('flex', isAdmin);
+            document.getElementById('admin-tools').classList.toggle('hidden', !isAdmin);
+            document.getElementById('admin-tools').classList.toggle('flex', isAdmin);
             renderGrid(); 
         }
 
-        // --- ACTIONS ---
+        // --- REKAPITULASI LOGIC ---
+        function bukaRekap() {
+            document.getElementById('rekap-modal').classList.add('active');
+            loadRekap('mingguan'); // Default load
+        }
 
-        function simpanAbsen() {
-            // Cek apakah sudah login admin
-            if (!activeAdminPassword) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Akses Terbatas',
-                    text: 'Hanya Kepala Sekolah/Admin yang bisa mengisi absen.',
-                    confirmButtonText: 'Login Sekarang',
-                    confirmButtonColor: '#764ba2'
-                }).then((result) => {
-                    if (result.isConfirmed) openLoginModal();
+        function loadRekap(periode) {
+            const tbody = document.getElementById('rekap-body');
+            const loading = document.getElementById('rekap-loading');
+            const content = document.getElementById('rekap-content');
+            
+            // Highlight button active
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-100', 'text-indigo-700', 'ring-indigo-300');
+                if(btn.innerText.toLowerCase().includes(periode.substring(0,4))) {
+                    btn.classList.add('bg-indigo-100', 'text-indigo-700', 'ring-indigo-300');
+                }
+            });
+
+            content.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            fetch(`${SCRIPT_URL}?action=getRekap&period=${periode}`)
+                .then(res => res.json())
+                .then(res => {
+                    tbody.innerHTML = '';
+                    if(res.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">Belum ada data untuk periode ini</td></tr>';
+                    }
+                    
+                    res.data.forEach((item, index) => {
+                        let color = 'bg-slate-500';
+                        if(item.persen >= 90) color = 'bg-emerald-500';
+                        else if(item.persen >= 70) color = 'bg-yellow-500';
+                        else color = 'bg-red-500';
+
+                        const html = `
+                            <tr>
+                                <td class="text-center font-bold text-slate-400">${index + 1}</td>
+                                <td class="font-bold text-slate-700">${item.nama}</td>
+                                <td class="text-center font-bold text-emerald-600 bg-emerald-50 rounded-lg">${item.h}</td>
+                                <td class="text-center font-medium text-red-600">${item.s}</td>
+                                <td class="text-center font-medium text-amber-600">${item.i}</td>
+                                <td class="text-center font-medium text-slate-600">${item.a}</td>
+                                <td class="text-center">
+                                    <span class="badge ${color}">${item.persen}%</span>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += html;
+                    });
+                })
+                .catch(err => Swal.fire('Error', 'Gagal memuat rekap', 'error'))
+                .finally(() => {
+                    loading.classList.add('hidden');
+                    content.classList.remove('hidden');
                 });
-                return;
-            }
+        }
 
+        // --- CRUD ACTIONS ---
+        function simpanAbsen() {
+            if (!activeAdminPassword) {
+                return Swal.fire({icon: 'warning', title: 'Akses Terbatas', text: 'Login sebagai Kepsek untuk mengisi absen.', confirmButtonColor: '#764ba2', confirmButtonText: 'Login'}).then((r) => { if (r.isConfirmed) openLoginModal(); });
+            }
             const date = document.getElementById('tgl-absen').value;
             const status = document.querySelector('input[name="status"]:checked').value;
             const catatan = document.getElementById('catatan').value;
-
             if (!selectedPegawai) return Swal.fire('Pilih Pegawai', 'Silakan klik nama pegawai di sebelah kanan', 'warning');
 
-            postData({
-                action: 'simpanAbsen',
-                teacher_name: selectedPegawai,
-                date: date,
-                status: status,
-                notes: catatan,
-                password: activeAdminPassword
-            }, () => {
-                selectedPegawai = null;
-                document.getElementById('catatan').value = '';
-                loadData(); 
-            });
+            postData({ action: 'simpanAbsen', teacher_name: selectedPegawai, date: date, status: status, notes: catatan, password: activeAdminPassword }, 
+                () => { selectedPegawai = null; document.getElementById('catatan').value = ''; loadData(); });
         }
 
         async function tambahPegawai() {
-            if (!activeAdminPassword) return;
-            
-            const { value: namaBaru } = await Swal.fire({
-                title: 'Tambah Pegawai Baru',
-                input: 'text',
-                inputLabel: 'Masukkan Nama Lengkap',
-                showCancelButton: true,
-                confirmButtonText: 'Simpan',
-                confirmButtonColor: '#764ba2',
-                inputValidator: (value) => {
-                    if (!value) return 'Nama tidak boleh kosong!'
-                }
-            });
-
-            if (namaBaru) {
-                postData({
-                    action: 'tambahPegawai',
-                    nama: namaBaru,
-                    password: activeAdminPassword
-                }, () => loadData());
-            }
+            const { value: namaBaru } = await Swal.fire({ title: 'Tambah Pegawai', input: 'text', showCancelButton: true, confirmButtonText: 'Simpan', confirmButtonColor: '#764ba2' });
+            if (namaBaru) postData({ action: 'tambahPegawai', nama: namaBaru, password: activeAdminPassword }, () => loadData());
         }
 
         function hapusPegawai(nama, event) {
-            event.stopPropagation(); 
-            if (!activeAdminPassword) return;
-
-            Swal.fire({
-                title: 'Hapus Pegawai?',
-                text: `Anda yakin ingin menghapus "${nama}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Ya, Hapus!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    postData({
-                        action: 'hapusPegawai',
-                        nama: nama,
-                        password: activeAdminPassword
-                    }, () => loadData());
-                }
-            });
+            event.stopPropagation();
+            Swal.fire({ title: 'Hapus?', text: nama, icon: 'warning', showCancelButton: true, confirmButtonText: 'Hapus', confirmButtonColor: '#d33' })
+            .then((r) => { if(r.isConfirmed) postData({ action: 'hapusPegawai', nama: nama, password: activeAdminPassword }, () => loadData()); });
         }
 
         function postData(payload, onSuccess) {
             Swal.fire({title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            })
+            fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
             .then(res => res.json())
             .then(res => {
-                if(res.status === 'success') {
-                    Swal.fire({icon: 'success', title: 'Berhasil!', text: res.message, timer: 1500, showConfirmButton: false});
-                    if (onSuccess) onSuccess();
-                } else {
-                    Swal.fire('Gagal', res.message, 'error');
-                }
-            })
-            .catch(err => {
-                Swal.fire('Error', 'Gagal menghubungi server', 'error');
-            });
+                if(res.status === 'success') { Swal.fire({icon: 'success', title: 'Berhasil', timer: 1000, showConfirmButton: false}); if (onSuccess) onSuccess(); } 
+                else { Swal.fire('Gagal', res.message, 'error'); }
+            }).catch(err => Swal.fire('Error', 'Gagal koneksi', 'error'));
         }
     </script>
 </body>
